@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - SecureReport</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo-container">
+                    <i class="fas fa-shield-alt logo-icon"></i>
+                    <span class="logo-text">SecureReport</span>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li><a href="/" class="nav-link">Home</a></li>
+                    <li><a href="/user-dashboard" class="nav-link active">Dashboard</a></li>
+                </ul>
+                
+                <div class="user-profile">
+                    <div id="user-info" class="user-info"></div>
+                </div>
+
+                <!-- Mobile Hamburger Menu -->
+                <button class="hamburger-menu" id="hamburger-menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-tachometer-alt"></i> Your Dashboard</h2>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="total-reports">0</div>
+                            <div class="stat-label">Total Reports</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="report-form-container">
+                <div class="form-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Report Details</h3>
+                    <p>Provide detailed information about the illegal activity you witnessed</p>
+                </div>
+                
+                <form id="report-form" class="report-form">
+                    <div class="location-section">
+                        <h4><i class="fas fa-map-marker-alt"></i> Location</h4>
+                        <div class="location-status" id="location-status">
+                            <div class="location-denied" id="location-denied">
+                                <div class="location-icon">
+                                    <i class="fas fa-location-slash"></i>
+                                </div>
+                                <div class="location-text">
+                                    <span>Location access denied. Please enable location services and try again.</span>
+                                </div>
+                            </div>
+                            
+                            <div class="location-loading" id="location-loading" style="display: none;">
+                                <div class="location-icon">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                                <div class="location-text">
+                                    <span>Getting your location...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="location-success" id="location-success" style="display: none;">
+                                <div class="location-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="location-text">
+                                    <span>Location captured successfully</span>
+                                    <div class="location-coords" id="location-coords"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="try-again-btn" id="try-location">
+                            <i class="fas fa-location-arrow"></i>
+                            <span>Try Again</span>
+                        </button>
+                        
+                        <input type="hidden" id="lat" name="lat">
+                        <input type="hidden" id="lng" name="lng">
+                    </div>
+                    
+                    <div class="report-type-section">
+                        <h4>Report Type</h4>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="photo-report" name="report-type" value="photo" checked>
+                                <label for="photo-report">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Photo Report (with evidence)</span>
+                                </label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="text-report" name="report-type" value="text">
+                                <label for="text-report">
+                                    <i class="fas fa-file-text"></i>
+                                    <span>Text Report (description only)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="report-title">Report Title *</label>
+                        <input type="text" id="report-title" name="title" placeholder="Brief description of the illegal activity" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Detailed Description *</label>
+                        <textarea id="description" name="description" rows="6" placeholder="Provide as much detail as possible about what you witnessed, when it happened, who was involved, etc." required></textarea>
+                    </div>
+                    
+                    <div class="form-group photo-upload" id="photo-section">
+                    <label for="image">Photos * (Max 5)</label>
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <span>Click to upload photos</span>
+                            <div class="upload-subtext">JPG, PNG up to 10MB each</div>
+                        </div>
+                        <input type="file" id="image" name="images" accept="image/*" multiple style="display: none;">
+                    </div>
+                        <div id="image-preview" class="image-preview"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary cancel-btn">Cancel</button>
+                        <button type="submit" class="btn primary submit-btn">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Submit Report</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="report-list">
+                <div class="list-header">
+                    <h3><i class="fas fa-list"></i> Your Reports</h3>
+                    <div class="filter-options">
+                        <select id="report-filter" class="filter-select">
+                            <option value="all">All Reports</option>
+                            <option value="recent">Recent</option>
+                            <option value="photo">With Photos</option>
+                            <option value="text">Text Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="reports-container" class="reports-grid">
+                    <!-- Reports will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>SecureReport</span>
+                    </div>
+                    <p>&copy; 2025 SecureReport. All rights reserved.</p>
+                </div>
+                
+                <div class="footer-right">
+                    <div class="footer-links">
+                        <a href="#" class="footer-link">Privacy Policy</a>
+                        <a href="#" class="footer-link">Terms of Service</a>
+                        <a href="#" class="footer-link">Support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/user-dashboard.js"></script>
+</body>
+</html>
