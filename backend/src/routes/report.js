@@ -1,5 +1,5 @@
 const express = require("express");
-const { submitReport, getAllReports, getUserReports } = require("../controllers/reportController");
+const { submitReport, getAllReports, getUserReports, getReportById } = require("../controllers/reportController");
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
@@ -16,5 +16,8 @@ router.get("/", authMiddleware(["user"]), getUserReports);
 
 // GET /api/reports/all → get all reports (auth: admin)
 router.get("/all", authMiddleware(["admin"]), getAllReports);
+
+// GET /api/reports/:id → get specific report by ID (auth: user or admin)
+router.get("/:id", authMiddleware(["user", "admin"]), getReportById);
 
 module.exports = router;

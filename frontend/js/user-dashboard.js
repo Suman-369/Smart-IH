@@ -584,11 +584,214 @@ function filterReports() {
     });
 }
 
-// View report details (placeholder)
-function viewReportDetails(reportId) {
-    // In a real application, this would open a modal or navigate to a details page
-    showMessage(`Viewing details for report: ${reportId}`, false);
+// View report details with modal
+async function viewReportDetails(reportId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        // Show loading state
+        showMessage('Loading report details...', false);
+        
+        const response = await fetch(`/api/reports/${reportId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showReportDetailsModal(data.report);
+        } else {
+            showMessage(data.message || 'Failed to load report details', true);
+        }
+    } catch (error) {
+        console.error('Error loading report details:', error);
+        showMessage('An error occurred while loading report details', true);
+    }
 }
+
+// Show report details modal
+function showReportDetailsModal(report) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.id = 'report-details-modal';
+    
+    // Create modal content
+    modalOverlay.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Report Details</h3>
+                <button class="modal-close" onclick="closeReportDetailsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="report-details-grid">
+                    <div class="detail-section">
+                        <h4>Report Information</h4>
+                        <div class="detail-item">
+                            <span class="detail-label">Report Type:</span>
+                            <span class="detail-value ${report.reportType === 'photo' ? 'photo' : 'text'}">
+                                <i class="fas fa-${report.reportType === 'photo' ? 'camera' : 'file-text'}"></i>
+                                ${report.reportType === 'photo' ? 'Photo Report' : 'Text Report'}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Submitted:</span>
+                            <span class="detail-value">${new Date(report.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value status-badge pending">
+                                <i class="fas fa-clock"></i>
+                                Pending Review
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Content</h4>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Title:</span>
+                            <span class="detail-value">${report.title || 'No title provided'}</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Description:</span>
+                            <p class="detail-value description-text">${report.description}</p>
+                        </div>
+                    </div>
+
+                    ${report.location ? `
+                    <div class="detail-section">
+                        <h4>Location</h4>
+                        <div class="detail-item">
+                            <span class="detail-label">Latitude:</span>
+                            <span class="detail-value">${report.location.lat.toFixed(6)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Longitude:</span>
+                            <span class="detail-value">${report.location.lng.toFixed(6)}</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <button class="view-map-btn" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
+                                <i class="fas fa-map-marked-alt"></i>
+                                View on Map
+                            </button>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${report.imageUrl && report.imageUrl.length > 0 ? `
+                    <div class="detail-section">
+                        <h4>Evidence Images (${report.imageUrl.length})</h4>
+                        <div class="image-gallery">
+                            ${report.imageUrl.map((imageUrl, index) => `
+                                <div class="gallery-item">
+                                    <img src="${imageUrl}" alt="Evidence ${index + 1}" onclick="openImageModal('${imageUrl}')">
+                                    <div class="image-overlay">
+                                        <i class="fas fa-search-plus"></i>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReportDetailsModal()">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(modalOverlay);
+    
+    // Show modal with animation
+    setTimeout(() => {
+        modalOverlay.classList.add('show');
+    }, 10);
+}
+
+// Close report details modal
+function closeReportDetailsModal() {
+    const modal = document.getElementById('report-details-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// View location on map
+function viewOnMap(lat, lng) {
+    const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+    window.open(mapUrl, '_blank');
+}
+
+// Open image in modal view
+function openImageModal(imageUrl) {
+    const imageModal = document.createElement('div');
+    imageModal.className = 'image-modal-overlay';
+    imageModal.innerHTML = `
+        <div class="image-modal-content">
+            <button class="image-modal-close" onclick="closeImageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="${imageUrl}" alt="Evidence image">
+        </div>
+    `;
+    
+    document.body.appendChild(imageModal);
+    
+    setTimeout(() => {
+        imageModal.classList.add('show');
+    }, 10);
+}
+
+// Close image modal
+function closeImageModal() {
+    const modal = document.querySelector('.image-modal-overlay');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('report-details-modal');
+    if (modal && e.target === modal) {
+        closeReportDetailsModal();
+    }
+    
+    const imageModal = document.querySelector('.image-modal-overlay');
+    if (imageModal && e.target === imageModal) {
+        closeImageModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeReportDetailsModal();
+        closeImageModal();
+    }
+});
 
 // Show message to user
 function showMessage(message, isError = false) {

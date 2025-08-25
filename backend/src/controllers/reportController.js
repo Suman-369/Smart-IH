@@ -74,8 +74,37 @@ async function getUserReports(req, res) {
   }
 }
 
+// Get specific report by ID
+async function getReportById(req, res) {
+  try {
+    const reportId = req.params.id;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Find the report
+    const report = await Report.findById(reportId)
+      .populate("user", "name email");
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // Check if user has permission to view this report
+    // Admins can view all reports, users can only view their own
+    if (userRole !== "admin" && report.user._id.toString() !== userId) {
+      return res.status(403).json({ message: "Access denied. You can only view your own reports." });
+    }
+
+    res.json({ report });
+  } catch (error) {
+    console.error("Fetch report by ID error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 module.exports = {
   submitReport,
   getAllReports,
   getUserReports,
+  getReportById,
 };
