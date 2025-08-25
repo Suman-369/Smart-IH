@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const reportSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   title: { type: String, required: true },
   description: { type: String, required: true },
   imageUrl: [String], // Changed to an array to store multiple image URLs

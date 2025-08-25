@@ -108,7 +108,7 @@ async function loadAllReports() {
         showLoading();
         console.log('Fetching reports for admin:', user.name);
 
-        const response = await fetch('/api/report/all', {
+        const response = await fetch('/api/reports/all', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',

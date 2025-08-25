@@ -380,7 +380,7 @@ async function submitReport(e) {
             showMessage(`📸 Uploading ${selectedImages.length} images: ${fileNames}`, false);
         }
 
-        const response = await fetch('/api/report', {
+        const response = await fetch('/api/reports', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -466,7 +466,7 @@ async function loadUserReports() {
 
     try {
         // Add cache control to prevent unnecessary repeated calls
-        const response = await fetch('/api/report', {
+        const response = await fetch('/api/reports', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Cache-Control': 'no-cache'

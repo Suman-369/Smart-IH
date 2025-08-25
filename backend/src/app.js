@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth");
 const reportRoutes = require("./routes/report");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const app = express();
 
@@ -55,7 +56,7 @@ app.use('/auth', (req, res, next) => {
 // Middleware to ensure JSON responses for API routes (except report routes which handle file uploads)
 app.use('/api', (req, res, next) => {
   // Don't set content type for report routes as they handle file uploads
-  if (!req.path.startsWith('/report')) {
+  if (!req.path.startsWith('/reports')) {
     res.setHeader('Content-Type', 'application/json');
   }
   next();
@@ -63,18 +64,9 @@ app.use('/api', (req, res, next) => {
 
 // API routes
 app.use("/auth", authRoutes);
-app.use("/api/report", reportRoutes);
+app.use("/api/reports", reportRoutes);
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.json({ 
-    status: "OK", 
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
+
 
 // Test endpoint for debugging
 app.post("/api/test", (req, res) => {
@@ -93,6 +85,15 @@ app.use(express.static(path.join(__dirname, "../../frontend")));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Catch-all for API routes that don't exist
+app.get("/api/health", async (req, res) => {
+    try {
+        await mongoose.connection.db.admin().ping();
+        res.status(200).json({ status: "healthy" });
+    } catch (error) {
+        res.status(500).json({ status: "unhealthy", error: error.message });
+    }
+});
+
 app.all('/api/*', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.status(404).json({
@@ -102,8 +103,9 @@ app.all('/api/*', (req, res) => {
       'POST /api/test',
       'POST /auth/register',
       'POST /auth/login',
-      'GET /api/report',
-      'POST /api/report'
+      'GET /api/reports',
+      'POST /api/reports',
+      'GET /api/reports/all'
     ]
   });
 });
