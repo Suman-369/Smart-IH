@@ -31,6 +31,21 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeMap();
   setupEventListeners();
   loadAllReports();
+
+  // Mobile Hamburger Menu Toggle
+  const hamburger = document.getElementById("hamburger-menu");
+  const mobileNav = document.getElementById("mobile-nav-menu");
+  hamburger.addEventListener("click", function () {
+    hamburger.classList.toggle("active");
+    mobileNav.classList.toggle("active");
+  });
+  // Close mobile nav on link click
+  mobileNav.querySelectorAll(".nav-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      hamburger.classList.remove("active");
+      mobileNav.classList.remove("active");
+    });
+  });
 });
 
 // Initialize map
