@@ -49,6 +49,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize location detection
   initLocationDetection();
 
+  // Always request location when report form is opened
+  const reportForm = document.getElementById("report-form");
+  if (reportForm) {
+    reportForm.addEventListener("focusin", function (e) {
+      requestLocation();
+    });
+  }
+
   // Set up event listeners
   setupEventListeners();
 
@@ -61,18 +69,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Initialize location detection
 function initLocationDetection() {
-  requestLocation();
-}
-
-// Request user's location
-function requestLocation() {
-  showLocationStatus("loading");
-
+  // Check if geolocation is supported
   if (!navigator.geolocation) {
     showLocationStatus("denied");
     showMessage("Geolocation is not supported by this browser.", true);
     return;
   }
+  
+  // Check if we already have permission or can request it
+  navigator.permissions?.query({ name: 'geolocation' })
+    .then(permissionStatus => {
+      if (permissionStatus.state === 'granted') {
+        requestLocation();
+      } else if (permissionStatus.state === 'prompt') {
+        // Show initial prompt to user
+        showLocationStatus("prompt");
+      } else {
+        showLocationStatus("denied");
+      }
+      
+      // Listen for permission changes
+      permissionStatus.onchange = () => {
+        if (permissionStatus.state === 'granted') {
+          requestLocation();
+        } else {
+          showLocationStatus("denied");
+        }
+      };
+    })
+    .catch(() => {
+      // Fallback for browsers that don't support permissions API
+      showLocationStatus("prompt");
+    });
+}
+
+// Request user's location
+function requestLocation() {
+  showLocationStatus("loading");
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -88,6 +121,9 @@ function requestLocation() {
 
       showLocationStatus("success");
       updateLocationCoords();
+      
+      // Show success message
+      showMessage("Location captured successfully! Your report will include precise location data.", false);
     },
     (error) => {
       console.error("Location error:", error);
@@ -95,17 +131,17 @@ function requestLocation() {
 
       switch (error.code) {
         case error.PERMISSION_DENIED:
-          showMessage("Location access denied by user.", true);
+          showMessage("Location access is required to submit a report. Please enable location services in your browser settings and try again.", true);
           break;
         case error.POSITION_UNAVAILABLE:
-          showMessage("Location information is unavailable.", true);
+          showMessage("Unable to determine your location. Please check your device's location services.", true);
           break;
         case error.TIMEOUT:
-          showMessage("Location request timed out.", true);
+          showMessage("Location request timed out. Please try again.", true);
           break;
         default:
           showMessage(
-            "An unknown error occurred while retrieving location.",
+            "An error occurred while retrieving your location. Please try again.",
             true
           );
           break;
@@ -113,8 +149,8 @@ function requestLocation() {
     },
     {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 60000,
+      timeout: 15000, // Increased timeout to 15 seconds
+      maximumAge: 300000, // 5 minutes
     }
   );
 }
@@ -124,23 +160,28 @@ function showLocationStatus(status) {
   const denied = document.getElementById("location-denied");
   const loading = document.getElementById("location-loading");
   const success = document.getElementById("location-success");
+  const prompt = document.getElementById("location-prompt");
 
   // Hide all status elements
-  denied.classList.remove("show");
-  loading.classList.remove("show");
-  success.classList.remove("show");
+  denied?.classList.remove("show");
+  loading?.classList.remove("show");
+  success?.classList.remove("show");
+  prompt?.classList.remove("show");
 
   // Show appropriate status
   switch (status) {
     case "loading":
-      loading.classList.add("show");
+      loading?.classList.add("show");
       break;
     case "success":
-      success.classList.add("show");
+      success?.classList.add("show");
+      break;
+    case "prompt":
+      prompt?.classList.add("show");
       break;
     case "denied":
     default:
-      denied.classList.add("show");
+      denied?.classList.add("show");
       break;
   }
 }
@@ -169,7 +210,10 @@ function setupEventListeners() {
   // Report form submission
   document
     .getElementById("report-form")
-    .addEventListener("submit", submitReport);
+    .addEventListener("submit", function (e) {
+      requestLocation(); // Force location prompt on submit
+      submitReport(e);
+    });
 
   // Report type change
   document.querySelectorAll('input[name="report-type"]').forEach((radio) => {

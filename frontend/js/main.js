@@ -185,26 +185,24 @@ function updateMobileNavigation() {
 
   if (token && user) {
     // User is logged in - hide auth links, show dashboard links
-    if (mobileAuthLinks) mobileAuthLinks.classList.remove("show");
-
+    if (mobileAuthLinks) mobileAuthLinks.style.display = "none";
     if (user.role === "admin") {
       if (mobileAdminDashboardLink)
-        mobileAdminDashboardLink.classList.add("show");
+        mobileAdminDashboardLink.style.display = "block";
       if (mobileUserDashboardLink)
-        mobileUserDashboardLink.classList.remove("show");
+        mobileUserDashboardLink.style.display = "none";
     } else {
       if (mobileUserDashboardLink)
-        mobileUserDashboardLink.classList.add("show");
+        mobileUserDashboardLink.style.display = "block";
       if (mobileAdminDashboardLink)
-        mobileAdminDashboardLink.classList.remove("show");
+        mobileAdminDashboardLink.style.display = "none";
     }
   } else {
     // User is not logged in - show auth links, hide dashboard links
-    if (mobileAuthLinks) mobileAuthLinks.classList.add("show");
-    if (mobileUserDashboardLink)
-      mobileUserDashboardLink.classList.remove("show");
+    if (mobileAuthLinks) mobileAuthLinks.style.display = "block";
+    if (mobileUserDashboardLink) mobileUserDashboardLink.style.display = "none";
     if (mobileAdminDashboardLink)
-      mobileAdminDashboardLink.classList.remove("show");
+      mobileAdminDashboardLink.style.display = "none";
   }
 }
 
