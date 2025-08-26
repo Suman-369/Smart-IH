@@ -2732,9 +2732,17 @@ body {
 }
 
 .action-btn.view {
-  background: var(--gradient-primary);
-  border-color: var(--primary-green);
-  color: var(--bg-primary);
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+.action-btn.view:hover {
+  background: #333333;
+  border-color: #333333;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .action-btn.edit {
@@ -3693,5 +3701,266 @@ body {
   .mobile-nav-menu .nav-link {
     font-size: 1rem;
     padding: 0.8rem;
+  }
+}
+
+/* Location Banner Styles */
+.location-banner {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 136, 0.1) 0%,
+    rgba(0, 204, 106, 0.1) 100%
+  );
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.location-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.location-banner-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg-primary);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.location-banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-banner-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.location-banner-status {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.location-banner-action {
+  background: var(--gradient-primary);
+  color: var(--bg-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.location-banner-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+}
+
+.location-banner-action:active {
+  transform: translateY(0);
+}
+
+/* Location Banner States */
+.location-banner.loading {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 193, 7, 0.1) 0%,
+    rgba(255, 152, 0, 0.1) 100%
+  );
+  border-color: rgba(255, 193, 7, 0.3);
+}
+
+.location-banner.loading .location-banner-icon {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  animation: pulse 2s infinite;
+}
+
+.location-banner.success {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 136, 0.1) 0%,
+    rgba(0, 204, 106, 0.1) 100%
+  );
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.location-banner.success .location-banner-icon {
+  background: var(--gradient-primary);
+  animation: successPulse 0.6s ease-out;
+}
+
+.location-banner.error {
+  background: linear-gradient(
+    135deg,
+    rgba(244, 67, 54, 0.1) 0%,
+    rgba(229, 57, 53, 0.1) 100%
+  );
+  border-color: rgba(244, 67, 54, 0.3);
+}
+
+.location-banner.error .location-banner-icon {
+  background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Coordinate Display Styles */
+.coordinates-display {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+.coordinate-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.coordinate-item:last-child {
+  border-bottom: none;
+}
+
+.coordinate-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.coordinate-value {
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  color: var(--primary-green);
+  font-size: 0.9rem;
+  background: rgba(0, 255, 136, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.coordinate-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.copy-coords-btn,
+.view-map-btn {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.copy-coords-btn:hover {
+  background: var(--primary-green);
+  color: var(--bg-primary);
+  border-color: var(--primary-green);
+  transform: translateY(-1px);
+}
+
+.view-map-btn:hover {
+  background: var(--primary-green);
+  color: var(--bg-primary);
+  border-color: var(--primary-green);
+  transform: translateY(-1px);
+}
+
+.copy-coords-btn:active,
+.view-map-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Location Banner */
+@media (max-width: 768px) {
+  .location-banner-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .location-banner-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .coordinate-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .coordinate-value {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .coordinate-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .copy-coords-btn,
+  .view-map-btn {
+    width: 100%;
   }
 }

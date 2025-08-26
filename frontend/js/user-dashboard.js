@@ -46,16 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
     userInfoDiv.innerHTML = `<div class="user-details">Profile info not available</div>`;
   }
 
-  // Initialize location detection
+  // Initialize location detection immediately when dashboard loads
   initLocationDetection();
-
-  // Always request location when report form is opened
-  const reportForm = document.getElementById("report-form");
-  if (reportForm) {
-    reportForm.addEventListener("focusin", function (e) {
-      requestLocation();
-    });
-  }
 
   // Set up event listeners
   setupEventListeners();
@@ -65,6 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update report type UI
   updateReportTypeUI();
+
+  // Start location refresh timer
+  startLocationRefresh();
 });
 
 // Initialize location detection
@@ -72,40 +67,72 @@ function initLocationDetection() {
   // Check if geolocation is supported
   if (!navigator.geolocation) {
     showLocationStatus("denied");
+    updateLocationBanner("error", "Geolocation not supported");
     showMessage("Geolocation is not supported by this browser.", true);
     return;
   }
-  
+
+  // Initialize banner with checking status
+  updateLocationBanner("loading", "Checking location access...");
+
+  // Show welcome message about location capture
+  showMessage(
+    "📍 Welcome! We'll capture your location to ensure accurate reporting. Please allow location access when prompted.",
+    false
+  );
+
   // Check if we already have permission or can request it
-  navigator.permissions?.query({ name: 'geolocation' })
-    .then(permissionStatus => {
-      if (permissionStatus.state === 'granted') {
+  navigator.permissions
+    ?.query({ name: "geolocation" })
+    .then((permissionStatus) => {
+      if (permissionStatus.state === "granted") {
+        // Location permission already granted, get location immediately
+        updateLocationBanner("loading", "Getting your location...");
         requestLocation();
-      } else if (permissionStatus.state === 'prompt') {
-        // Show initial prompt to user
+      } else if (permissionStatus.state === "prompt") {
+        // Show initial prompt to user and request location
         showLocationStatus("prompt");
+        updateLocationBanner("prompt", "Please allow location access");
+        // Automatically request location after a short delay to give user time to read the message
+        setTimeout(() => {
+          requestLocation();
+        }, 2000);
       } else {
+        // Permission denied, show status and provide instructions
         showLocationStatus("denied");
+        updateLocationBanner("error", "Location access denied");
+        showMessage(
+          "Location access is required for submitting reports. Please enable location services in your browser settings and refresh the page.",
+          true
+        );
       }
-      
+
       // Listen for permission changes
       permissionStatus.onchange = () => {
-        if (permissionStatus.state === 'granted') {
+        if (permissionStatus.state === "granted") {
+          updateLocationBanner("loading", "Getting your location...");
           requestLocation();
         } else {
           showLocationStatus("denied");
+          updateLocationBanner("error", "Location access denied");
         }
       };
     })
     .catch(() => {
       // Fallback for browsers that don't support permissions API
       showLocationStatus("prompt");
+      updateLocationBanner("prompt", "Please allow location access");
+      // Automatically request location after a short delay
+      setTimeout(() => {
+        requestLocation();
+      }, 2000);
     });
 }
 
 // Request user's location
 function requestLocation() {
   showLocationStatus("loading");
+  updateLocationBanner("loading", "Getting your location...");
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -120,36 +147,80 @@ function requestLocation() {
       document.getElementById("lng").value = userLocation.lng;
 
       showLocationStatus("success");
+
+      // Update banner with location details
+      const accuracyText =
+        userLocation.accuracy < 10
+          ? "High accuracy"
+          : userLocation.accuracy < 50
+          ? "Good accuracy"
+          : "Approximate location";
+      updateLocationBanner(
+        "success",
+        `${accuracyText} (${Math.round(
+          userLocation.accuracy
+        )}m) - Ready for reporting`
+      );
+
       updateLocationCoords();
-      
-      // Show success message
-      showMessage("Location captured successfully! Your report will include precise location data.", false);
+
+      // Show success message with location details
+      const accuracyTextMsg =
+        userLocation.accuracy < 10
+          ? "high accuracy"
+          : userLocation.accuracy < 50
+          ? "good accuracy"
+          : "approximate location";
+      showMessage(
+        ` ${accuracyTextMsg} (${Math.round(
+          userLocation.accuracy
+        )}m accuracy). Your report will include precise location data.`,
+        false
+      );
     },
     (error) => {
       console.error("Location error:", error);
       showLocationStatus("denied");
 
+      let errorMessage = "";
+      let bannerMessage = "";
+
       switch (error.code) {
         case error.PERMISSION_DENIED:
-          showMessage("Location access is required to submit a report. Please enable location services in your browser settings and try again.", true);
+          errorMessage =
+            "Location access is required to submit a report. Please enable location services in your browser settings and try again.";
+          bannerMessage = "Location access denied";
           break;
         case error.POSITION_UNAVAILABLE:
-          showMessage("Unable to determine your location. Please check your device's location services.", true);
+          errorMessage =
+            "Unable to determine your location. Please check your device's location services and try again.";
+          bannerMessage = "Location unavailable";
           break;
         case error.TIMEOUT:
-          showMessage("Location request timed out. Please try again.", true);
+          errorMessage = "Location request timed out. Please try again.";
+          bannerMessage = "Location request timed out";
           break;
         default:
-          showMessage(
-            "An error occurred while retrieving your location. Please try again.",
-            true
-          );
+          errorMessage =
+            "An error occurred while retrieving your location. Please try again.";
+          bannerMessage = "Location error occurred";
           break;
+      }
+
+      updateLocationBanner("error", bannerMessage);
+      showMessage(errorMessage, true);
+
+      // Add retry button functionality
+      const tryAgainBtn = document.getElementById("try-location");
+      if (tryAgainBtn) {
+        tryAgainBtn.style.display = "block";
+        tryAgainBtn.innerHTML =
+          '<i class="fas fa-location-arrow"></i><span>Try Again</span>';
       }
     },
     {
       enableHighAccuracy: true,
-      timeout: 15000, // Increased timeout to 15 seconds
+      timeout: 20000, // Increased timeout to 20 seconds for better reliability
       maximumAge: 300000, // 5 minutes
     }
   );
@@ -172,32 +243,112 @@ function showLocationStatus(status) {
   switch (status) {
     case "loading":
       loading?.classList.add("show");
+      updateLocationBanner("loading", "Getting your location...");
       break;
     case "success":
       success?.classList.add("show");
+      updateLocationBanner("success", "Location captured successfully!");
       break;
     case "prompt":
       prompt?.classList.add("show");
+      updateLocationBanner("prompt", "Please allow location access");
       break;
     case "denied":
     default:
       denied?.classList.add("show");
+      updateLocationBanner("error", "Location access denied");
       break;
+  }
+}
+
+// Update location banner
+function updateLocationBanner(status, message) {
+  const banner = document.getElementById("location-banner");
+  const bannerStatus = document.getElementById("location-banner-status");
+  const bannerAction = document.getElementById("location-banner-action");
+
+  if (!banner || !bannerStatus) return;
+
+  // Remove all status classes
+  banner.classList.remove("loading", "success", "error", "prompt");
+
+  // Add appropriate status class
+  banner.classList.add(status);
+
+  // Update status message
+  bannerStatus.textContent = message;
+
+  // Show/hide action button based on status
+  if (status === "error" || status === "prompt") {
+    bannerAction.style.display = "flex";
+    bannerAction.innerHTML =
+      '<i class="fas fa-location-arrow"></i>Enable Location';
+    bannerAction.onclick = requestLocation;
+  } else {
+    bannerAction.style.display = "none";
   }
 }
 
 // Update location coordinates display
 function updateLocationCoords() {
   if (userLocation) {
+    // Update the location coordinates display in the form
     document.getElementById("location-coords").innerHTML = `
-            <span>Lat: ${userLocation.lat.toFixed(
-              6
-            )}, Lng: ${userLocation.lng.toFixed(6)}</span>
-            <span class="accuracy">Accuracy: ��${Math.round(
-              userLocation.accuracy
-            )}m</span>
+            <div class="coordinates-display">
+                <div class="coordinate-item">
+                    <span class="coordinate-label">Latitude:</span>
+                    <span class="coordinate-value">${userLocation.lat.toFixed(
+                      6
+                    )}</span>
+                </div>
+                <div class="coordinate-item">
+                    <span class="coordinate-label">Longitude:</span>
+                    <span class="coordinate-value">${userLocation.lng.toFixed(
+                      6
+                    )}</span>
+                </div>
+                <div class="coordinate-item">
+                    <span class="coordinate-label">Accuracy:</span>
+                    <span class="coordinate-value">±${Math.round(
+                      userLocation.accuracy
+                    )}m</span>
+                </div>
+                <div class="coordinate-actions">
+                    <button type="button" class="copy-coords-btn" onclick="copyCoordinates()">
+                        <i class="fas fa-copy"></i>
+                        Copy Coordinates
+                    </button>
+                    <button type="button" class="view-map-btn" onclick="viewOnMap(${
+                      userLocation.lat
+                    }, ${userLocation.lng})">
+                        <i class="fas fa-map-marked-alt"></i>
+                        View on Map
+                    </button>
+                </div>
+            </div>
         `;
+
+    // Also update the location text to show coordinates are captured
+    const locationText = document.querySelector(
+      ".location-success .location-text span"
+    );
+    if (locationText) {
+      locationText.textContent = `Location captured successfully - Coordinates: ${userLocation.lat.toFixed(
+        6
+      )}, ${userLocation.lng.toFixed(6)}`;
+    }
   }
+}
+
+// Refresh location periodically to ensure accuracy
+function startLocationRefresh() {
+  // Refresh location every 5 minutes to ensure accuracy
+  setInterval(() => {
+    if (userLocation) {
+      console.log("Refreshing location for accuracy...");
+      requestLocation();
+    }
+  }, 300000); // 5 minutes
 }
 
 // Setup all event listeners
@@ -1005,6 +1156,31 @@ function showMessage(message, isError = false) {
   }, 5000);
 }
 
+// Copy coordinates to clipboard
+function copyCoordinates() {
+  if (userLocation) {
+    const coords = `${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(
+      6
+    )}`;
+    navigator.clipboard
+      .writeText(coords)
+      .then(() => {
+        showMessage("Coordinates copied to clipboard!", false);
+      })
+      .catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement("textarea");
+        textArea.value = coords;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        showMessage("Coordinates copied to clipboard!", false);
+      });
+  }
+}
+
 // Global function to remove images (called from onclick)
 window.removeImage = removeImage;
 window.viewReportDetails = viewReportDetails;
+window.copyCoordinates = copyCoordinates;
