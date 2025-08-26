@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileNavMenu.innerHTML = `
             <ul class="nav-menu">
                 <li><a href="/" class="nav-link">Home</a></li>
-                <li><a href="#features" class="nav-link">Features</a></li>
-                <li><a href="#about" class="nav-link">About</a></li>
                 <li id="mobile-auth-links" class="auth-links">
                     <a href="/login" class="nav-link">Login</a>
                     <a href="/register" class="nav-link">Register</a>
@@ -36,6 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!hamburgerMenu.contains(e.target) && !mobileNavMenu.contains(e.target)) {
                 mobileNavMenu.classList.remove('active');
                 hamburgerMenu.classList.remove('active');
+            }
+        });
+        
+        // Add smooth scrolling for mobile navigation links
+        mobileNavMenu.addEventListener('click', function(e) {
+            const link = e.target.closest('a.nav-link');
+            if (link && link.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu after clicking
+                    mobileNavMenu.classList.remove('active');
+                    hamburgerMenu.classList.remove('active');
+                }
             }
         });
         
@@ -75,6 +92,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Add event listeners for Get Started buttons
+    const navGetStartedButton = document.getElementById('nav-get-started-button');
+    const heroGetStartedButton = document.getElementById('hero-get-started-button');
+
+    if (navGetStartedButton) {
+        navGetStartedButton.addEventListener('click', handleGetStarted);
+    }
+
+    if (heroGetStartedButton) {
+        heroGetStartedButton.addEventListener('click', handleGetStarted);
+    }
+
     // Test server connection on page load
     testServerConnection();
 });
@@ -120,6 +149,11 @@ function updateNavigation() {
         }
     } else {
         // User is not logged in - show auth links and get started button, hide profile
+        // Change button text to "Go to Dashboard"
+        const getStartedButton = document.getElementById('nav-get-started-button') || document.getElementById('hero-get-started-button');
+        if (getStartedButton) {
+            getStartedButton.innerHTML = '<span>Go to Dashboard</span><i class="fas fa-arrow-right"></i>';
+        }
         if (authLinks) authLinks.style.display = 'block';
         if (getStartedButton) getStartedButton.style.display = 'block';
         if (userProfileNav) userProfileNav.style.display = 'none';
@@ -378,3 +412,24 @@ function showMessage(message, isError = false) {
 
 // Make showMessage globally available
 window.showMessage = showMessage;
+
+// Handle Get Started button click
+function handleGetStarted() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    if (token && user) {
+        // User is logged in - redirect to appropriate dashboard
+        if (user.role === 'admin') {
+            window.location.href = '/admin-dashboard';
+        } else {
+            window.location.href = '/user-dashboard';
+        }
+    } else {
+        // User is not logged in - redirect to registration page
+        window.location.href = '/register';
+    }
+}
+
+// Make handleGetStarted globally available
+window.handleGetStarted = handleGetStarted;

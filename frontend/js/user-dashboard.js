@@ -404,7 +404,7 @@ async function submitReport(e) {
 
             // Show success animation and redirect to home page
             showSuccessAnimation(successMessage, () => {
-                window.location.href = '/';
+                window.location.href = '/user-dashboard';
             });
         } else {
             // More detailed error messages

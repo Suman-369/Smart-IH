@@ -1,250 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SecureReport - Advanced Digital Reporting</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles/main.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="bg-overlay"></div>
-    
+
     <header class="header">
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo-container">
-                    <i class="fas fa-shield-alt logo-icon"></i>
-                    <span class="logo-text">SecureReport</span>
-                </div>
-                
-                <ul class="nav-menu">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="#features" class="nav-link">Features</a></li>
-                    <li><a href="#about" class="nav-link">About</a></li>
-                    <li id="auth-links" class="auth-links">
-                        <a href="/login" class="nav-link">Login</a>
-                        <a href="/register" class="nav-link">Register</a>
-                    </li>
-                    <li id="user-dashboard-link" class="dashboard-link" style="display: none;">
-                        <a href="/user-dashboard" class="nav-link">Dashboard</a>
-                    </li>
-                    <li id="admin-dashboard-link" class="dashboard-link" style="display: none;">
-                        <a href="/admin-dashboard" class="nav-link">Admin Panel</a>
-                    </li>
-                    <!-- <li id="logout-link" class="logout-link" style="display: none;">
+      <nav class="navbar">
+        <div class="nav-container">
+          <button class="hamburger-menu" id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div class="logo-container">
+            <i class="fas fa-shield-alt logo-icon"></i>
+            <span class="logo-text">SecureReport</span>
+          </div>
+
+          <ul class="nav-menu">
+            <li><a href="/" class="nav-link">Home</a></li>
+            <li><a href="#features" class="nav-link">Features</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li id="auth-links" class="auth-links">
+              <a href="/login" class="nav-link">Login</a>
+              <a href="/register" class="nav-link">Register</a>
+            </li>
+            <li
+              id="user-dashboard-link"
+              class="dashboard-link"
+              style="display: none"
+            >
+              <a href="/user-dashboard" class="nav-link">Dashboard</a>
+            </li>
+            <li
+              id="admin-dashboard-link"
+              class="dashboard-link"
+              style="display: none"
+            >
+              <a href="/admin-dashboard" class="nav-link">Admin Panel</a>
+            </li>
+            <!-- <li id="logout-link" class="logout-link" style="display: none;">
                         <a href="#" id="logout" class="nav-link">Logout</a>
                     </li> -->
-                </ul>
+          </ul>
 
-                <div class="contact-button" id="get-started-button">
-                    <a href="/register" class="contact-btn">
-                        <span>Get Started</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
+          <div class="contact-button" id="get-started-button">
+            <a id="nav-get-started-button" class="contact-btn">
+              <span>Get Started</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
 
-                <!-- Mobile Hamburger Menu -->
-                <button class="hamburger-menu" id="hamburger-menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+          <!-- Mobile Hamburger Menu -->
 
-                <div class="user-profile-nav" id="user-profile-nav" style="display: none;">
-                    <div class="profile-icon" id="profile-icon">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="user-name-nav"></span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="profile-dropdown" id="profile-dropdown">
-                        <div class="profile-dropdown-header">
-                            <div class="user-avatar">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            <div class="user-info">
-                                <div class="user-name" id="dropdown-user-name"></div>
-                                <div class="user-email" id="dropdown-user-email"></div>
-                            </div>
-                        </div>
-                        <div class="profile-dropdown-menu">
-                            <a href="#" class="dropdown-item" id="view-profile">
-                                <i class="fas fa-user"></i>
-                                <span>View Profile</span>
-                            </a>
-                            <a href="#" class="dropdown-item" id="edit-profile">
-                                <i class="fas fa-edit"></i>
-                                <span>Edit Profile</span>
-                            </a>
-                            <a href="#" class="dropdown-item" id="profile-logout">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+          <div
+            class="user-profile-nav"
+            id="user-profile-nav"
+            style="display: none"
+          >
+            <div class="profile-icon" id="profile-icon">
+              <i class="fas fa-user-circle"></i>
+              <span id="user-name-nav"></span>
+              <i class="fas fa-chevron-down"></i>
             </div>
-        </nav>
+            <div class="profile-dropdown" id="profile-dropdown">
+              <div class="profile-dropdown-header">
+                <div class="user-avatar">
+                  <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                  <div class="user-name" id="dropdown-user-name"></div>
+                  <div class="user-email" id="dropdown-user-email"></div>
+                </div>
+              </div>
+              <div class="profile-dropdown-menu">
+                <a href="#" class="dropdown-item" id="view-profile">
+                  <i class="fas fa-user"></i>
+                  <span>View Profile</span>
+                </a>
+                <!-- <a href="#" class="dropdown-item" id="edit-profile">
+                  <i class="fas fa-edit"></i>
+                  <span>Edit Profile</span>
+                </a> -->
+                <a href="#" class="dropdown-item" id="profile-logout">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
     </header>
 
     <main class="main-content">
-        <section class="hero-section">
-            <div class="hero-container">
-                <div class="hero-content">
-                    <div class="hero-badge">
-                        <i class="fas fa-lock"></i>
-                        <span>CYBER SECURITY</span>
-                    </div>
-                    
-                    <h1 class="hero-title">
-                        Securing
-                        <span class="title-highlight">Digital Reports</span>
-                        on the Dot.
-                    </h1>
-                    
-                    <p class="hero-description">
-                        We deliver our clients by integrating cyber security by design into digital transformation.
-                    </p>
-                    
-                    <div class="hero-actions">
-                        <a href="/register" class="primary-btn">
-                            <span>Get Started</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="hero-visual">
-                    <div class="globe-container">
-                        <div class="globe"></div>
-                        <div class="orbit orbit-1"></div>
-                        <div class="orbit orbit-2"></div>
-                        <div class="data-points">
-                            <div class="data-point point-1">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="data-point point-2">
-                                <i class="fas fa-camera"></i>
-                            </div>
-                            <div class="data-point point-3">
-                                <i class="fas fa-shield-check"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <section class="hero-section">
+        <div class="hero-container">
+          <div class="hero-content">
+            <div class="hero-badge">
+              <i class="fas fa-lock"></i>
+              <span>CYBER SECURITY</span>
             </div>
-        </section>
 
-        <section id="features" class="features-section">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Advanced Reporting Features</h2>
-                    <p>Comprehensive digital reporting with enhanced security and location tracking</p>
-                </div>
-                
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-map-marked-alt"></i>
-                        </div>
-                        <h3>Location Tracking</h3>
-                        <p>Automatically capture and verify the exact location where reports are submitted with GPS precision.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-camera-retro"></i>
-                        </div>
-                        <h3>Photo Evidence</h3>
-                        <p>Upload high-quality images with metadata preservation for comprehensive documentation.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3>Secure Access</h3>
-                        <p>Role-based authentication ensuring only authorized users can access sensitive information.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>Analytics Dashboard</h3>
-                        <p>Real-time analytics and reporting for administrators with interactive map visualization.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+            <h1 class="hero-title">
+              Securing
+              <span class="title-highlight">Digital Reports</span>
+              on the Dot.
+            </h1>
 
-        <section id="about" class="about-section">
-            <div class="container">
-                <div class="about-content">
-                    <div class="about-text">
-                        <h2>Trusted by Organizations Worldwide</h2>
-                        <p>Our secure reporting platform has been designed with security-first principles, ensuring that sensitive information remains protected while providing powerful tools for data collection and analysis.</p>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-number">99.9%</div>
-                                <div class="stat-label">Uptime</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">256-bit</div>
-                                <div class="stat-label">Encryption</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">24/7</div>
-                                <div class="stat-label">Monitoring</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="about-visual">
-                        <div class="security-grid">
-                            <div class="security-node active">
-                                <i class="fas fa-shield-virus"></i>
-                            </div>
-                            <div class="security-node">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <div class="security-node active">
-                                <i class="fas fa-fingerprint"></i>
-                            </div>
-                            <div class="security-node">
-                                <i class="fas fa-key"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <p class="hero-description">
+              We deliver our clients by integrating cyber security by design
+              into digital transformation.
+            </p>
+
+            <div class="hero-actions">
+              <a id="hero-get-started-button" class="primary-btn">
+                <span>Get Started</span>
+                <i class="fas fa-arrow-right"></i>
+              </a>
             </div>
-        </section>
+          </div>
+
+          <div class="hero-visual">
+            <div class="globe-container">
+              <div class="globe"></div>
+              <div class="orbit orbit-1"></div>
+              <div class="orbit orbit-2"></div>
+              <div class="data-points">
+                <div class="data-point point-1">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="data-point point-2">
+                  <i class="fas fa-camera"></i>
+                </div>
+                <div class="data-point point-3">
+                  <i class="fas fa-user-shield"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="features-section">
+        <div class="container">
+          <div class="section-header">
+            <h2>Advanced Reporting Features</h2>
+            <p>
+              Comprehensive digital reporting with enhanced security and
+              location tracking
+            </p>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-map-marked-alt"></i>
+              </div>
+              <h3>Location Tracking</h3>
+              <p>
+                Automatically capture and verify the exact location where
+                reports are submitted with GPS precision.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-camera-retro"></i>
+              </div>
+              <h3>Photo Evidence</h3>
+              <p>
+                Upload high-quality images with metadata preservation for
+                comprehensive documentation.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <h3>Secure Access</h3>
+              <p>
+                Role-based authentication ensuring only authorized users can
+                access sensitive information.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h3>Analytics Dashboard</h3>
+              <p>
+                Real-time analytics and reporting for administrators with
+                interactive map visualization.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="about-section">
+        <div class="container">
+          <div class="about-content">
+            <div class="about-text">
+              <h2>Trusted by Organizations Worldwide</h2>
+              <p>
+                Our secure reporting platform has been designed with
+                security-first principles, ensuring that sensitive information
+                remains protected while providing powerful tools for data
+                collection and analysis.
+              </p>
+
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-number">99.9%</div>
+                  <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">256-bit</div>
+                  <div class="stat-label">Encryption</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">24/7</div>
+                  <div class="stat-label">Monitoring</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-visual">
+              <div class="security-grid">
+                <div class="security-node active">
+                  <i class="fas fa-shield-virus"></i>
+                </div>
+                <div class="security-node">
+                  <i class="fas fa-lock"></i>
+                </div>
+                <div class="security-node active">
+                  <i class="fas fa-fingerprint"></i>
+                </div>
+                <div class="security-node">
+                  <i class="fas fa-key"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <div class="footer-logo">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>SecureReport</span>
-                    </div>
-                    <p>&copy; 2025 SecureReport. All rights reserved.</p>
-                </div>
-                
-                <div class="footer-right">
-                    <div class="footer-links">
-                        <a href="#" class="footer-link">Privacy Policy</a>
-                        <a href="#" class="footer-link">Terms of Service</a>
-                        <a href="#" class="footer-link">Support</a>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-left">
+            <div class="footer-logo">
+              <i class="fas fa-shield-alt"></i>
+              <span>SecureReport</span>
             </div>
+            <p>&copy; 2025 SecureReport. All rights reserved.</p>
+          </div>
+
+          <div class="footer-right">
+            <div class="footer-links">
+              <a href="#" class="footer-link">Privacy Policy</a>
+              <a href="#" class="footer-link">Terms of Service</a>
+              <a href="#" class="footer-link">Support</a>
+            </div>
+          </div>
         </div>
+      </div>
     </footer>
 
     <script src="js/main.js"></script>
-</body>
+  </body>
 </html>

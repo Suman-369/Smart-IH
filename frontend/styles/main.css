@@ -3324,7 +3324,7 @@ body {
     /* Mobile navigation menu */
     .mobile-nav-menu {
         position: fixed;
-        top: 0;
+        top: 0.5rem;
         left: -100%;
         width: 100%;
         height: 100vh;
