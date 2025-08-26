@@ -8,18 +8,18 @@ let selectedImages = [];
 let userLocation = null;
 
 // Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
-    
-    if (!token || !user) {
-        window.location.href = '/login';
-        return;
-    }
-    
-    // Display user info
-    document.getElementById('user-info').innerHTML = `
+document.addEventListener("DOMContentLoaded", function () {
+  // Check if user is logged in
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!token || !user) {
+    window.location.href = "/login";
+    return;
+  }
+
+  // Display user info
+  document.getElementById("user-info").innerHTML = `
         <div class="user-avatar">
             <i class="fas fa-user"></i>
         </div>
@@ -28,237 +28,281 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="user-role">${user.role}</div>
         </div>
     `;
-    
-    // Initialize location detection
-    initLocationDetection();
-    
+  const userInfoDiv = document.getElementById("user-info");
+  // Debug log for troubleshooting
+  console.log("Loaded user from localStorage:", user);
+  // Display user info or fallback
+  if (user && user.name && user.role) {
+    userInfoDiv.innerHTML = `
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-role">${user.role}</div>
+                </div>
+            `;
+  } else {
+    userInfoDiv.innerHTML = `<div class="user-details">Profile info not available</div>`;
+  }
 
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Load user's reports
-    loadUserReports();
-    
-    // Update report type UI
-    updateReportTypeUI();
+  // Initialize location detection
+  initLocationDetection();
+
+  // Set up event listeners
+  setupEventListeners();
+
+  // Load user's reports
+  loadUserReports();
+
+  // Update report type UI
+  updateReportTypeUI();
 });
 
 // Initialize location detection
 function initLocationDetection() {
-    requestLocation();
+  requestLocation();
 }
 
 // Request user's location
 function requestLocation() {
-    showLocationStatus('loading');
-    
-    if (!navigator.geolocation) {
-        showLocationStatus('denied');
-        showMessage('Geolocation is not supported by this browser.', true);
-        return;
+  showLocationStatus("loading");
+
+  if (!navigator.geolocation) {
+    showLocationStatus("denied");
+    showMessage("Geolocation is not supported by this browser.", true);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      };
+
+      // Update hidden inputs
+      document.getElementById("lat").value = userLocation.lat;
+      document.getElementById("lng").value = userLocation.lng;
+
+      showLocationStatus("success");
+      updateLocationCoords();
+    },
+    (error) => {
+      console.error("Location error:", error);
+      showLocationStatus("denied");
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          showMessage("Location access denied by user.", true);
+          break;
+        case error.POSITION_UNAVAILABLE:
+          showMessage("Location information is unavailable.", true);
+          break;
+        case error.TIMEOUT:
+          showMessage("Location request timed out.", true);
+          break;
+        default:
+          showMessage(
+            "An unknown error occurred while retrieving location.",
+            true
+          );
+          break;
+      }
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
     }
-    
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            userLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                accuracy: position.coords.accuracy
-            };
-            
-            // Update hidden inputs
-            document.getElementById('lat').value = userLocation.lat;
-            document.getElementById('lng').value = userLocation.lng;
-            
-            showLocationStatus('success');
-            updateLocationCoords();
-        },
-        (error) => {
-            console.error('Location error:', error);
-            showLocationStatus('denied');
-            
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    showMessage('Location access denied by user.', true);
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    showMessage('Location information is unavailable.', true);
-                    break;
-                case error.TIMEOUT:
-                    showMessage('Location request timed out.', true);
-                    break;
-                default:
-                    showMessage('An unknown error occurred while retrieving location.', true);
-                    break;
-            }
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
-        }
-    );
+  );
 }
 
 // Show location status
 function showLocationStatus(status) {
-    const denied = document.getElementById('location-denied');
-    const loading = document.getElementById('location-loading');
-    const success = document.getElementById('location-success');
-    
-    // Hide all status elements
-    denied.classList.remove('show');
-    loading.classList.remove('show');
-    success.classList.remove('show');
-    
-    // Show appropriate status
-    switch(status) {
-        case 'loading':
-            loading.classList.add('show');
-            break;
-        case 'success':
-            success.classList.add('show');
-            break;
-        case 'denied':
-        default:
-            denied.classList.add('show');
-            break;
-    }
+  const denied = document.getElementById("location-denied");
+  const loading = document.getElementById("location-loading");
+  const success = document.getElementById("location-success");
+
+  // Hide all status elements
+  denied.classList.remove("show");
+  loading.classList.remove("show");
+  success.classList.remove("show");
+
+  // Show appropriate status
+  switch (status) {
+    case "loading":
+      loading.classList.add("show");
+      break;
+    case "success":
+      success.classList.add("show");
+      break;
+    case "denied":
+    default:
+      denied.classList.add("show");
+      break;
+  }
 }
 
 // Update location coordinates display
 function updateLocationCoords() {
-    if (userLocation) {
-        document.getElementById('location-coords').innerHTML = `
-            <span>Lat: ${userLocation.lat.toFixed(6)}, Lng: ${userLocation.lng.toFixed(6)}</span>
-            <span class="accuracy">Accuracy: ��${Math.round(userLocation.accuracy)}m</span>
+  if (userLocation) {
+    document.getElementById("location-coords").innerHTML = `
+            <span>Lat: ${userLocation.lat.toFixed(
+              6
+            )}, Lng: ${userLocation.lng.toFixed(6)}</span>
+            <span class="accuracy">Accuracy: ��${Math.round(
+              userLocation.accuracy
+            )}m</span>
         `;
-    }
+  }
 }
 
 // Setup all event listeners
 function setupEventListeners() {
-    // Try location again button
-    document.getElementById('try-location').addEventListener('click', requestLocation);
-    
-    // Report form submission
-    document.getElementById('report-form').addEventListener('submit', submitReport);
-    
-    // Report type change
-    document.querySelectorAll('input[name="report-type"]').forEach(radio => {
-        radio.addEventListener('change', updateReportTypeUI);
-    });
-    
-    // File upload
-    const uploadArea = document.getElementById('upload-area');
-    const fileInput = document.getElementById('image');
-    
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('drop', handleDrop);
-    fileInput.addEventListener('change', handleFileSelect);
-    
-    // Report filter
-    document.getElementById('report-filter').addEventListener('change', filterReports);
-    
-    // Cancel button
-    document.querySelector('.cancel-btn').addEventListener('click', resetForm);
+  // Try location again button
+  document
+    .getElementById("try-location")
+    .addEventListener("click", requestLocation);
+
+  // Report form submission
+  document
+    .getElementById("report-form")
+    .addEventListener("submit", submitReport);
+
+  // Report type change
+  document.querySelectorAll('input[name="report-type"]').forEach((radio) => {
+    radio.addEventListener("change", updateReportTypeUI);
+  });
+
+  // File upload
+  const uploadArea = document.getElementById("upload-area");
+  const fileInput = document.getElementById("image");
+
+  uploadArea.addEventListener("click", () => fileInput.click());
+  uploadArea.addEventListener("dragover", handleDragOver);
+  uploadArea.addEventListener("drop", handleDrop);
+  fileInput.addEventListener("change", handleFileSelect);
+
+  // Report filter
+  document
+    .getElementById("report-filter")
+    .addEventListener("change", filterReports);
+
+  // Cancel button
+  document.querySelector(".cancel-btn").addEventListener("click", resetForm);
 }
 
 // Update UI based on report type
 function updateReportTypeUI() {
-    const reportType = document.querySelector('input[name="report-type"]:checked').value;
-    const photoSection = document.getElementById('photo-section');
-    const imageInput = document.getElementById('image');
-    
-    if (reportType === 'photo') {
-        photoSection.classList.add('show');
-        imageInput.required = true;
-    } else {
-        photoSection.classList.remove('show');
-        imageInput.required = false;
-        selectedImages = [];
-        updateImagePreview();
-    }
+  const reportType = document.querySelector(
+    'input[name="report-type"]:checked'
+  ).value;
+  const photoSection = document.getElementById("photo-section");
+  const imageInput = document.getElementById("image");
+
+  if (reportType === "photo") {
+    photoSection.classList.add("show");
+    imageInput.required = true;
+  } else {
+    photoSection.classList.remove("show");
+    imageInput.required = false;
+    selectedImages = [];
+    updateImagePreview();
+  }
 }
 
 // Handle drag over
 function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+  e.preventDefault();
+  e.currentTarget.classList.add("drag-over");
 }
 
 // Handle drop
 function handleDrop(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    
-    const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
+  e.preventDefault();
+  e.currentTarget.classList.remove("drag-over");
+
+  const files = Array.from(e.dataTransfer.files);
+  handleFiles(files);
 }
 
 // Handle file select
 function handleFileSelect(e) {
-    const files = Array.from(e.target.files);
-    handleFiles(files);
+  const files = Array.from(e.target.files);
+  handleFiles(files);
 }
 
 // Handle multiple files
 function handleFiles(files) {
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
-    if (imageFiles.length === 0) {
-        showMessage('Please select valid image files (JPG, PNG, etc.).', true);
-        return;
+  if (imageFiles.length === 0) {
+    showMessage("Please select valid image files (JPG, PNG, etc.).", true);
+    return;
+  }
+
+  if (selectedImages.length + imageFiles.length > 5) {
+    showMessage(
+      "Maximum 5 images allowed. You can only add " +
+        (5 - selectedImages.length) +
+        " more images.",
+      true
+    );
+    return;
+  }
+
+  let filesAdded = 0;
+  let filesRejected = 0;
+
+  imageFiles.forEach((file) => {
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB limit
+      showMessage(
+        `File "${file.name}" is too large. Maximum size is 10MB.`,
+        true
+      );
+      filesRejected++;
+      return;
     }
 
-    if (selectedImages.length + imageFiles.length > 5) {
-        showMessage('Maximum 5 images allowed. You can only add ' + (5 - selectedImages.length) + ' more images.', true);
-        return;
+    // Check if file already exists
+    const existingFile = selectedImages.find(
+      (img) => img.name === file.name && img.size === file.size
+    );
+    if (existingFile) {
+      showMessage(`File "${file.name}" is already selected.`, true);
+      filesRejected++;
+      return;
     }
 
-    let filesAdded = 0;
-    let filesRejected = 0;
+    selectedImages.push(file);
+    filesAdded++;
+  });
 
-    imageFiles.forEach(file => {
-        if (file.size > 10 * 1024 * 1024) { // 10MB limit
-            showMessage(`File "${file.name}" is too large. Maximum size is 10MB.`, true);
-            filesRejected++;
-            return;
-        }
+  if (filesAdded > 0) {
+    showMessage(`${filesAdded} image(s) added successfully!`, false);
+    updateImagePreview();
+  }
 
-        // Check if file already exists
-        const existingFile = selectedImages.find(img => img.name === file.name && img.size === file.size);
-        if (existingFile) {
-            showMessage(`File "${file.name}" is already selected.`, true);
-            filesRejected++;
-            return;
-        }
-
-        selectedImages.push(file);
-        filesAdded++;
-    });
-
-    if (filesAdded > 0) {
-        showMessage(`${filesAdded} image(s) added successfully!`, false);
-        updateImagePreview();
-    }
-
-    if (filesRejected > 0 && filesAdded === 0) {
-        showMessage(`${filesRejected} file(s) could not be added.`, true);
-    }
+  if (filesRejected > 0 && filesAdded === 0) {
+    showMessage(`${filesRejected} file(s) could not be added.`, true);
+  }
 }
 
 // Update image preview
 function updateImagePreview() {
-    const previewContainer = document.getElementById('image-preview');
-    
-    if (selectedImages.length === 0) {
-        previewContainer.innerHTML = '';
-        return;
-    }
-    
-    previewContainer.innerHTML = selectedImages.map((file, index) => `
+  const previewContainer = document.getElementById("image-preview");
+
+  if (selectedImages.length === 0) {
+    previewContainer.innerHTML = "";
+    return;
+  }
+
+  previewContainer.innerHTML = selectedImages
+    .map(
+      (file, index) => `
         <div class="image-preview-item">
             <img src="${URL.createObjectURL(file)}" alt="Preview ${index + 1}">
             <button type="button" class="remove-image" onclick="removeImage(${index})">
@@ -266,29 +310,33 @@ function updateImagePreview() {
             </button>
             <div class="image-info">
                 <span class="image-name">${file.name}</span>
-                <span class="image-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                <span class="image-size">${(file.size / 1024 / 1024).toFixed(
+                  2
+                )} MB</span>
             </div>
         </div>
-    `).join('');
+    `
+    )
+    .join("");
 }
 
 // Remove image from selection
 function removeImage(index) {
-    selectedImages.splice(index, 1);
-    updateImagePreview();
+  selectedImages.splice(index, 1);
+  updateImagePreview();
 }
 
 // Show success animation with tick mark
 function showSuccessAnimation(message, callback) {
-    // Create overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'success-overlay';
-    
-    // Create success animation container
-    const successContainer = document.createElement('div');
-    successContainer.className = 'success-animation-container';
-    
-    successContainer.innerHTML = `
+  // Create overlay
+  const overlay = document.createElement("div");
+  overlay.className = "success-overlay";
+
+  // Create success animation container
+  const successContainer = document.createElement("div");
+  successContainer.className = "success-animation-container";
+
+  successContainer.innerHTML = `
         <div class="success-animation">
             <div class="success-checkmark">
                 <div class="check-icon">
@@ -308,210 +356,258 @@ function showSuccessAnimation(message, callback) {
             </div>
         </div>
     `;
-    
-    overlay.appendChild(successContainer);
-    document.body.appendChild(overlay);
-    
-    // Trigger animation
-    setTimeout(() => {
-        overlay.classList.add('show');
-        successContainer.classList.add('animate');
-    }, 100);
-    
-    // Auto redirect after animation
-    setTimeout(() => {
-        if (callback) callback();
-    }, 3000);
+
+  overlay.appendChild(successContainer);
+  document.body.appendChild(overlay);
+
+  // Trigger animation
+  setTimeout(() => {
+    overlay.classList.add("show");
+    successContainer.classList.add("animate");
+  }, 100);
+
+  // Auto redirect after animation
+  setTimeout(() => {
+    if (callback) callback();
+  }, 3000);
 }
 
 // Submit a new report
 async function submitReport(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login';
-        return;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+
+  const title = document.getElementById("report-title").value;
+  const description = document.getElementById("description").value;
+  const lat = document.getElementById("lat").value;
+  const lng = document.getElementById("lng").value;
+  const reportType = document.querySelector(
+    'input[name="report-type"]:checked'
+  ).value;
+
+  // Validation
+  if (!lat || !lng) {
+    showMessage("Please enable location access to submit a report.", true);
+    return;
+  }
+
+  if (reportType === "photo" && selectedImages.length === 0) {
+    showMessage(
+      "📸 Please select at least one image for photo report. Click the upload area above to add photos.",
+      true
+    );
+    return;
+  }
+
+  try {
+    // Show loading state with upload progress
+    const submitBtn = document.querySelector(".submit-btn");
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> <span>Uploading Report...</span>';
+    submitBtn.disabled = true;
+
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("lat", parseFloat(lat));
+    formData.append("lng", parseFloat(lng));
+    formData.append("reportType", reportType);
+
+    // Add all selected images
+    if (reportType === "photo" && selectedImages.length > 0) {
+      selectedImages.forEach((image, index) => {
+        formData.append("images", image); // Append all selected images
+      });
+
+      // Show which images are being uploaded
+      const fileNames = selectedImages.map((img) => img.name).join(", ");
+      const totalSize = (
+        selectedImages.reduce((sum, img) => sum + img.size, 0) /
+        1024 /
+        1024
+      ).toFixed(2);
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Uploading ${selectedImages.length} images (${totalSize}MB)...</span>`;
+
+      showMessage(
+        `📸 Uploading ${selectedImages.length} images: ${fileNames}`,
+        false
+      );
     }
 
-    const title = document.getElementById('report-title').value;
-    const description = document.getElementById('description').value;
-    const lat = document.getElementById('lat').value;
-    const lng = document.getElementById('lng').value;
-    const reportType = document.querySelector('input[name="report-type"]:checked').value;
+    const response = await fetch("/api/reports", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }).catch((error) => {
+      console.error("Fetch error:", error);
+      throw new Error("Network error: " + error.message);
+    });
 
-    // Validation
-    if (!lat || !lng) {
-        showMessage('Please enable location access to submit a report.', true);
-        return;
+    const data = await response.json();
+
+    if (response.ok) {
+      // Reset form
+      resetForm();
+
+      // Show success message based on report type
+      const successMessage =
+        reportType === "photo"
+          ? `📸 Photo report submitted successfully! Your evidence has been uploaded and the report is now under review.`
+          : `📝 Text report submitted successfully! Your report is now under review.`;
+
+      // Show success animation and redirect to home page
+      showSuccessAnimation(successMessage, () => {
+        window.location.href = "/user-dashboard";
+      });
+    } else {
+      // More detailed error messages
+      let errorMessage = "Failed to submit report. ";
+      if (response.status === 401) {
+        errorMessage += "Please log in again.";
+        setTimeout(() => (window.location.href = "/login"), 2000);
+      } else if (response.status === 413) {
+        errorMessage += "File too large. Please select a smaller image.";
+      } else if (response.status === 400) {
+        errorMessage +=
+          data.message || "Please check your input and try again.";
+      } else {
+        errorMessage += data.message || "Please try again later.";
+      }
+      showMessage(errorMessage, true);
+    }
+  } catch (error) {
+    console.error("Report submission error:", error);
+    let errorMessage = "An error occurred while submitting the report";
+
+    // Provide more specific error messages based on the error type
+    if (error.message.includes("Network error")) {
+      errorMessage =
+        "Network error: Please check your internet connection and try again";
+    } else if (error.message.includes("Failed to upload image")) {
+      errorMessage = "Image upload failed: " + error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
 
-    if (reportType === 'photo' && selectedImages.length === 0) {
-        showMessage('📸 Please select at least one image for photo report. Click the upload area above to add photos.', true);
-        return;
-    }
-
-    try {
-        // Show loading state with upload progress
-        const submitBtn = document.querySelector('.submit-btn');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Uploading Report...</span>';
-        submitBtn.disabled = true;
-
-        // Create FormData to handle file uploads
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('lat', parseFloat(lat));
-        formData.append('lng', parseFloat(lng));
-        formData.append('reportType', reportType);
-
-        // Add all selected images
-        if (reportType === 'photo' && selectedImages.length > 0) {
-            selectedImages.forEach((image, index) => {
-                formData.append('images', image); // Append all selected images
-            });
-
-            // Show which images are being uploaded
-            const fileNames = selectedImages.map(img => img.name).join(', ');
-            const totalSize = (selectedImages.reduce((sum, img) => sum + img.size, 0) / 1024 / 1024).toFixed(2);
-            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Uploading ${selectedImages.length} images (${totalSize}MB)...</span>`;
-            
-            showMessage(`📸 Uploading ${selectedImages.length} images: ${fileNames}`, false);
-        }
-
-        const response = await fetch('/api/reports', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        }).catch(error => {
-            console.error('Fetch error:', error);
-            throw new Error('Network error: ' + error.message);
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            // Reset form
-            resetForm();
-
-            // Show success message based on report type
-            const successMessage = reportType === 'photo'
-                ? `📸 Photo report submitted successfully! Your evidence has been uploaded and the report is now under review.`
-                : `📝 Text report submitted successfully! Your report is now under review.`;
-
-            // Show success animation and redirect to home page
-            showSuccessAnimation(successMessage, () => {
-                window.location.href = '/user-dashboard';
-            });
-        } else {
-            // More detailed error messages
-            let errorMessage = 'Failed to submit report. ';
-            if (response.status === 401) {
-                errorMessage += 'Please log in again.';
-                setTimeout(() => window.location.href = '/login', 2000);
-            } else if (response.status === 413) {
-                errorMessage += 'File too large. Please select a smaller image.';
-            } else if (response.status === 400) {
-                errorMessage += data.message || 'Please check your input and try again.';
-            } else {
-                errorMessage += data.message || 'Please try again later.';
-            }
-            showMessage(errorMessage, true);
-        }
-    } catch (error) {
-        console.error('Report submission error:', error);
-        let errorMessage = 'An error occurred while submitting the report';
-        
-        // Provide more specific error messages based on the error type
-        if (error.message.includes('Network error')) {
-            errorMessage = 'Network error: Please check your internet connection and try again';
-        } else if (error.message.includes('Failed to upload image')) {
-            errorMessage = 'Image upload failed: ' + error.message;
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        
-        showMessage(errorMessage, true);
-    } finally {
-        // Reset button state
-        const submitBtn = document.querySelector('.submit-btn');
-        submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Submit Report</span>';
-        submitBtn.disabled = false;
-    }
+    showMessage(errorMessage, true);
+  } finally {
+    // Reset button state
+    const submitBtn = document.querySelector(".submit-btn");
+    submitBtn.innerHTML =
+      '<i class="fas fa-exclamation-triangle"></i> <span>Submit Report</span>';
+    submitBtn.disabled = false;
+  }
 }
 
 // Reset form
 function resetForm() {
-    document.getElementById('report-form').reset();
-    selectedImages = [];
-    updateImagePreview();
-    updateReportTypeUI();
-    
-    // Re-detect location
-    if (!userLocation) {
-        requestLocation();
-    }
+  document.getElementById("report-form").reset();
+  selectedImages = [];
+  updateImagePreview();
+  updateReportTypeUI();
+
+  // Re-detect location
+  if (!userLocation) {
+    requestLocation();
+  }
 }
 
 // Load user's reports
 async function loadUserReports() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login';
-        return;
-    }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
 
-    try {
-        // Add cache control to prevent unnecessary repeated calls
-        const response = await fetch('/api/reports', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache'
-            }
-        });
+  try {
+    // Add cache control to prevent unnecessary repeated calls
+    const response = await fetch("/api/reports", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+      },
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (response.ok) {
-            const reportsContainer = document.getElementById('reports-container');
-            const totalReportsElement = document.getElementById('total-reports');
+    if (response.ok) {
+      const reportsContainer = document.getElementById("reports-container");
+      const totalReportsElement = document.getElementById("total-reports");
 
-            if (data.reports && data.reports.length > 0) {
-                totalReportsElement.textContent = data.reports.length;
+      if (data.reports && data.reports.length > 0) {
+        totalReportsElement.textContent = data.reports.length;
 
-                reportsContainer.innerHTML = data.reports.map(report => `
+        reportsContainer.innerHTML = data.reports
+          .map(
+            (report) => `
                     <div class="report-card">
                         <div class="report-header">
-                            <div class="report-type-badge ${report.reportType === 'photo' ? 'photo' : 'text'}">
-                                <i class="fas fa-${report.reportType === 'photo' ? 'camera' : 'file-text'}"></i>
-                                <span>${report.reportType === 'photo' ? 'Photo Report' : 'Text Report'}</span>
+                            <div class="report-type-badge ${
+                              report.reportType === "photo" ? "photo" : "text"
+                            }">
+                                <i class="fas fa-${
+                                  report.reportType === "photo"
+                                    ? "camera"
+                                    : "file-text"
+                                }"></i>
+                                <span>${
+                                  report.reportType === "photo"
+                                    ? "Photo Report"
+                                    : "Text Report"
+                                }</span>
                             </div>
                             <div class="report-date">
-                                ${new Date(report.createdAt).toLocaleDateString()}
+                                ${new Date(
+                                  report.createdAt
+                                ).toLocaleDateString()}
                             </div>
                         </div>
 
                         <div class="report-content">
-                            <h4 class="report-title">${report.title || report.description.substring(0, 50) + '...'}</h4>
-                            <p class="report-description">${report.description}</p>
+                            <h4 class="report-title">${
+                              report.title ||
+                              report.description.substring(0, 50) + "..."
+                            }</h4>
+                            <p class="report-description">${
+                              report.description
+                            }</p>
 
-                            ${report.location ? `
+                            ${
+                              report.location
+                                ? `
                                 <div class="report-location">
                                     <div class="location-badge">
                                         <i class="fas fa-map-marker-alt"></i>
-                                        <span>Lat: ${report.location.lat.toFixed(6)}, Lng: ${report.location.lng.toFixed(6)}</span>
+                                        <span>Lat: ${report.location.lat.toFixed(
+                                          6
+                                        )}, Lng: ${report.location.lng.toFixed(
+                                    6
+                                  )}</span>
                                     </div>
                                 </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
 
-                            ${report.imageUrl && report.imageUrl.length > 0 ? `
+                            ${
+                              report.imageUrl && report.imageUrl.length > 0
+                                ? `
                                 <div class="report-image">
                                     <img src="${report.imageUrl[0]}" alt="Report evidence" loading="lazy">
                                 </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                         </div>
 
                         <div class="report-footer">
@@ -522,17 +618,21 @@ async function loadUserReports() {
                                 </span>
                             </div>
                             <div class="report-actions">
-                                <button class="action-btn view-btn" onclick="viewReportDetails('${report._id}')">
+                                <button class="action-btn view-btn" onclick="viewReportDetails('${
+                                  report._id
+                                }')">
                                     <i class="fas fa-eye"></i>
                                     View
                                 </button>
                             </div>
                         </div>
                     </div>
-                `).join('');
-            } else {
-                totalReportsElement.textContent = '0';
-                reportsContainer.innerHTML = `
+                `
+          )
+          .join("");
+      } else {
+        totalReportsElement.textContent = "0";
+        reportsContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">
                             <i class="fas fa-file-alt"></i>
@@ -541,93 +641,93 @@ async function loadUserReports() {
                         <p>You haven't submitted any reports yet. Submit your first report using the form above.</p>
                     </div>
                 `;
-            }
-        } else {
-            showMessage(data.message || 'Failed to load reports', true);
-        }
-    } catch (error) {
-        console.error('Error loading reports:', error);
-        showMessage('An error occurred while loading reports', true);
+      }
+    } else {
+      showMessage(data.message || "Failed to load reports", true);
     }
+  } catch (error) {
+    console.error("Error loading reports:", error);
+    showMessage("An error occurred while loading reports", true);
+  }
 }
 
 // Filter reports
 function filterReports() {
-    const filterValue = document.getElementById('report-filter').value;
-    const reportCards = document.querySelectorAll('.report-card');
-    
-    reportCards.forEach(card => {
-        let show = true;
-        
-        switch(filterValue) {
-            case 'photo':
-                show = card.querySelector('.photo') !== null;
-                break;
-            case 'text':
-                show = card.querySelector('.text') !== null;
-                break;
-            case 'recent':
-                // Show reports from last 7 days
-                const dateElement = card.querySelector('.report-date');
-                const reportDate = new Date(dateElement.textContent);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                show = reportDate > weekAgo;
-                break;
-            case 'all':
-            default:
-                show = true;
-                break;
-        }
-        
-        if (show) {
-            card.classList.add('show');
-        } else {
-            card.classList.remove('show');
-        }
-    });
+  const filterValue = document.getElementById("report-filter").value;
+  const reportCards = document.querySelectorAll(".report-card");
+
+  reportCards.forEach((card) => {
+    let show = true;
+
+    switch (filterValue) {
+      case "photo":
+        show = card.querySelector(".photo") !== null;
+        break;
+      case "text":
+        show = card.querySelector(".text") !== null;
+        break;
+      case "recent":
+        // Show reports from last 7 days
+        const dateElement = card.querySelector(".report-date");
+        const reportDate = new Date(dateElement.textContent);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        show = reportDate > weekAgo;
+        break;
+      case "all":
+      default:
+        show = true;
+        break;
+    }
+
+    if (show) {
+      card.classList.add("show");
+    } else {
+      card.classList.remove("show");
+    }
+  });
 }
 
 // View report details with modal
 async function viewReportDetails(reportId) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login';
-        return;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+
+  try {
+    // Show loading state
+    showMessage("Loading report details...", false);
+
+    const response = await fetch(`/api/reports/${reportId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showReportDetailsModal(data.report);
+    } else {
+      showMessage(data.message || "Failed to load report details", true);
     }
-
-    try {
-        // Show loading state
-        showMessage('Loading report details...', false);
-        
-        const response = await fetch(`/api/reports/${reportId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showReportDetailsModal(data.report);
-        } else {
-            showMessage(data.message || 'Failed to load report details', true);
-        }
-    } catch (error) {
-        console.error('Error loading report details:', error);
-        showMessage('An error occurred while loading report details', true);
-    }
+  } catch (error) {
+    console.error("Error loading report details:", error);
+    showMessage("An error occurred while loading report details", true);
+  }
 }
 
 // Show report details modal
 function showReportDetailsModal(report) {
-    // Create modal overlay
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-overlay';
-    modalOverlay.id = 'report-details-modal';
-    
-    // Create modal content
-    modalOverlay.innerHTML = `
+  // Create modal overlay
+  const modalOverlay = document.createElement("div");
+  modalOverlay.className = "modal-overlay";
+  modalOverlay.id = "report-details-modal";
+
+  // Create modal content
+  modalOverlay.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Report Details</h3>
@@ -642,14 +742,26 @@ function showReportDetailsModal(report) {
                         <h4>Report Information</h4>
                         <div class="detail-item">
                             <span class="detail-label">Report Type:</span>
-                            <span class="detail-value ${report.reportType === 'photo' ? 'photo' : 'text'}">
-                                <i class="fas fa-${report.reportType === 'photo' ? 'camera' : 'file-text'}"></i>
-                                ${report.reportType === 'photo' ? 'Photo Report' : 'Text Report'}
+                            <span class="detail-value ${
+                              report.reportType === "photo" ? "photo" : "text"
+                            }">
+                                <i class="fas fa-${
+                                  report.reportType === "photo"
+                                    ? "camera"
+                                    : "file-text"
+                                }"></i>
+                                ${
+                                  report.reportType === "photo"
+                                    ? "Photo Report"
+                                    : "Text Report"
+                                }
                             </span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Submitted:</span>
-                            <span class="detail-value">${new Date(report.createdAt).toLocaleString()}</span>
+                            <span class="detail-value">${new Date(
+                              report.createdAt
+                            ).toLocaleString()}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Status:</span>
@@ -664,49 +776,73 @@ function showReportDetailsModal(report) {
                         <h4>Content</h4>
                         <div class="detail-item full-width">
                             <span class="detail-label">Title:</span>
-                            <span class="detail-value">${report.title || 'No title provided'}</span>
+                            <span class="detail-value">${
+                              report.title || "No title provided"
+                            }</span>
                         </div>
                         <div class="detail-item full-width">
                             <span class="detail-label">Description:</span>
-                            <p class="detail-value description-text">${report.description}</p>
+                            <p class="detail-value description-text">${
+                              report.description
+                            }</p>
                         </div>
                     </div>
 
-                    ${report.location ? `
+                    ${
+                      report.location
+                        ? `
                     <div class="detail-section">
                         <h4>Location</h4>
                         <div class="detail-item">
                             <span class="detail-label">Latitude:</span>
-                            <span class="detail-value">${report.location.lat.toFixed(6)}</span>
+                            <span class="detail-value">${report.location.lat.toFixed(
+                              6
+                            )}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Longitude:</span>
-                            <span class="detail-value">${report.location.lng.toFixed(6)}</span>
+                            <span class="detail-value">${report.location.lng.toFixed(
+                              6
+                            )}</span>
                         </div>
                         <div class="detail-item full-width">
-                            <button class="view-map-btn" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
+                            <button class="view-map-btn" onclick="viewOnMap(${
+                              report.location.lat
+                            }, ${report.location.lng})">
                                 <i class="fas fa-map-marked-alt"></i>
                                 View on Map
                             </button>
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
-                    ${report.imageUrl && report.imageUrl.length > 0 ? `
+                    ${
+                      report.imageUrl && report.imageUrl.length > 0
+                        ? `
                     <div class="detail-section">
                         <h4>Evidence Images (${report.imageUrl.length})</h4>
                         <div class="image-gallery">
-                            ${report.imageUrl.map((imageUrl, index) => `
+                            ${report.imageUrl
+                              .map(
+                                (imageUrl, index) => `
                                 <div class="gallery-item">
-                                    <img src="${imageUrl}" alt="Evidence ${index + 1}" onclick="openImageModal('${imageUrl}')">
+                                    <img src="${imageUrl}" alt="Evidence ${
+                                  index + 1
+                                }" onclick="openImageModal('${imageUrl}')">
                                     <div class="image-overlay">
                                         <i class="fas fa-search-plus"></i>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `
+                              )
+                              .join("")}
                         </div>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
             </div>
             
@@ -718,38 +854,38 @@ function showReportDetailsModal(report) {
             </div>
         </div>
     `;
-    
-    // Add to page
-    document.body.appendChild(modalOverlay);
-    
-    // Show modal with animation
-    setTimeout(() => {
-        modalOverlay.classList.add('show');
-    }, 10);
+
+  // Add to page
+  document.body.appendChild(modalOverlay);
+
+  // Show modal with animation
+  setTimeout(() => {
+    modalOverlay.classList.add("show");
+  }, 10);
 }
 
 // Close report details modal
 function closeReportDetailsModal() {
-    const modal = document.getElementById('report-details-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
-    }
+  const modal = document.getElementById("report-details-modal");
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.remove();
+    }, 300);
+  }
 }
 
 // View location on map
 function viewOnMap(lat, lng) {
-    const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-    window.open(mapUrl, '_blank');
+  const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+  window.open(mapUrl, "_blank");
 }
 
 // Open image in modal view
 function openImageModal(imageUrl) {
-    const imageModal = document.createElement('div');
-    imageModal.className = 'image-modal-overlay';
-    imageModal.innerHTML = `
+  const imageModal = document.createElement("div");
+  imageModal.className = "image-modal-overlay";
+  imageModal.innerHTML = `
         <div class="image-modal-content">
             <button class="image-modal-close" onclick="closeImageModal()">
                 <i class="fas fa-times"></i>
@@ -757,70 +893,72 @@ function openImageModal(imageUrl) {
             <img src="${imageUrl}" alt="Evidence image">
         </div>
     `;
-    
-    document.body.appendChild(imageModal);
-    
-    setTimeout(() => {
-        imageModal.classList.add('show');
-    }, 10);
+
+  document.body.appendChild(imageModal);
+
+  setTimeout(() => {
+    imageModal.classList.add("show");
+  }, 10);
 }
 
 // Close image modal
 function closeImageModal() {
-    const modal = document.querySelector('.image-modal-overlay');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
-    }
+  const modal = document.querySelector(".image-modal-overlay");
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.remove();
+    }, 300);
+  }
 }
 
 // Close modal when clicking outside
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('report-details-modal');
-    if (modal && e.target === modal) {
-        closeReportDetailsModal();
-    }
-    
-    const imageModal = document.querySelector('.image-modal-overlay');
-    if (imageModal && e.target === imageModal) {
-        closeImageModal();
-    }
+document.addEventListener("click", function (e) {
+  const modal = document.getElementById("report-details-modal");
+  if (modal && e.target === modal) {
+    closeReportDetailsModal();
+  }
+
+  const imageModal = document.querySelector(".image-modal-overlay");
+  if (imageModal && e.target === imageModal) {
+    closeImageModal();
+  }
 });
 
 // Close modal with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeReportDetailsModal();
-        closeImageModal();
-    }
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    closeReportDetailsModal();
+    closeImageModal();
+  }
 });
 
 // Show message to user
 function showMessage(message, isError = false) {
-    // Create message element
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isError ? 'error' : 'success'}`;
-    messageDiv.innerHTML = `
+  // Create message element
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message ${isError ? "error" : "success"}`;
+  messageDiv.innerHTML = `
         <div class="message-content">
-            <i class="fas fa-${isError ? 'exclamation-circle' : 'check-circle'}"></i>
+            <i class="fas fa-${
+              isError ? "exclamation-circle" : "check-circle"
+            }"></i>
             <span>${message}</span>
         </div>
         <button class="message-close" onclick="this.parentElement.remove()">
             <i class="fas fa-times"></i>
         </button>
     `;
-    
-    // Add to page
-    document.body.appendChild(messageDiv);
-    
-    // Remove after 5 seconds
-    setTimeout(() => {
-        if (messageDiv.parentElement) {
-            messageDiv.remove();
-        }
-    }, 5000);
+
+  // Add to page
+  document.body.appendChild(messageDiv);
+
+  // Remove after 5 seconds
+  setTimeout(() => {
+    if (messageDiv.parentElement) {
+      messageDiv.remove();
+    }
+  }, 5000);
 }
 
 // Global function to remove images (called from onclick)
