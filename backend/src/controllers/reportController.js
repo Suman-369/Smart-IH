@@ -8,14 +8,18 @@ async function submitReport(req, res) {
   try {
     const { title, description, lat, lng, reportType } = req.body;
     const userId = req.user.id;
-    let imageUrls = [], imageIds = [];
+    let imageUrls = [],
+      imageIds = [];
 
     if (req.files?.length) {
       for (const file of req.files) {
-        const base64Image = file.buffer.toString('base64');
+        const base64Image = file.buffer.toString("base64");
         const imageId = uuidv4();
 
-        const uploadResponse = await uploadImg(base64Image, `${imageId}-${file.originalname}`);
+        const uploadResponse = await uploadImg(
+          base64Image,
+          `${imageId}-${file.originalname}`
+        );
         imageUrls.push(uploadResponse.url);
         imageIds.push(uploadResponse.fileId);
       }
@@ -27,11 +31,11 @@ async function submitReport(req, res) {
       description,
       imageUrl: imageUrls,
       imageId: imageIds,
-      reportType: reportType || 'text',
+      reportType: reportType || "text",
       location: {
         lat: parseFloat(lat),
-        lng: parseFloat(lng)
-      }
+        lng: parseFloat(lng),
+      },
     });
 
     res.status(201).json({
@@ -82,8 +86,10 @@ async function getReportById(req, res) {
     const userRole = req.user.role;
 
     // Find the report
-    const report = await Report.findById(reportId)
-      .populate("user", "name email");
+    const report = await Report.findById(reportId).populate(
+      "user",
+      "name email"
+    );
 
     if (!report) {
       return res.status(404).json({ message: "Report not found" });
@@ -92,7 +98,9 @@ async function getReportById(req, res) {
     // Check if user has permission to view this report
     // Admins can view all reports, users can only view their own
     if (userRole !== "admin" && report.user._id.toString() !== userId) {
-      return res.status(403).json({ message: "Access denied. You can only view your own reports." });
+      return res.status(403).json({
+        message: "Access denied. You can only view your own reports.",
+      });
     }
 
     res.json({ report });
@@ -102,9 +110,45 @@ async function getReportById(req, res) {
   }
 }
 
+// Update report status (admin only)
+async function updateReportStatus(req, res) {
+  try {
+    const reportId = req.params.id;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ["pending", "reviewed", "resolved"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        message: "Invalid status. Must be one of: pending, reviewed, resolved",
+      });
+    }
+
+    // Find and update the report
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      { status },
+      { new: true }
+    ).populate("user", "name email");
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json({
+      message: "Report status updated successfully",
+      report,
+    });
+  } catch (error) {
+    console.error("Update report status error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 module.exports = {
   submitReport,
   getAllReports,
   getUserReports,
   getReportById,
+  updateReportStatus,
 };

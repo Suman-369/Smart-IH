@@ -107,21 +107,21 @@ function showLocationStatus(status) {
     const success = document.getElementById('location-success');
     
     // Hide all status elements
-    denied.style.display = 'none';
-    loading.style.display = 'none';
-    success.style.display = 'none';
+    denied.classList.remove('show');
+    loading.classList.remove('show');
+    success.classList.remove('show');
     
     // Show appropriate status
     switch(status) {
         case 'loading':
-            loading.style.display = 'flex';
+            loading.classList.add('show');
             break;
         case 'success':
-            success.style.display = 'flex';
+            success.classList.add('show');
             break;
         case 'denied':
         default:
-            denied.style.display = 'flex';
+            denied.classList.add('show');
             break;
     }
 }
@@ -172,10 +172,10 @@ function updateReportTypeUI() {
     const imageInput = document.getElementById('image');
     
     if (reportType === 'photo') {
-        photoSection.style.display = 'block';
+        photoSection.classList.add('show');
         imageInput.required = true;
     } else {
-        photoSection.style.display = 'none';
+        photoSection.classList.remove('show');
         imageInput.required = false;
         selectedImages = [];
         updateImagePreview();
@@ -580,7 +580,11 @@ function filterReports() {
                 break;
         }
         
-        card.style.display = show ? 'block' : 'none';
+        if (show) {
+            card.classList.add('show');
+        } else {
+            card.classList.remove('show');
+        }
     });
 }
 

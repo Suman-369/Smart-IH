@@ -122,22 +122,22 @@ function updateNavigation() {
 
     if (token && user) {
         // User is logged in - hide auth links and get started button, show profile
-        if (authLinks) authLinks.style.display = 'none';
-        if (getStartedButton) getStartedButton.style.display = 'none';
+        if (authLinks) authLinks.classList.remove('show');
+        if (getStartedButton) getStartedButton.classList.remove('show');
         if (userProfileNav) {
-            userProfileNav.style.display = 'block';
+            userProfileNav.classList.add('show');
             setupProfileDropdown(user);
         }
 
         if (user.role === 'admin') {
-            if (adminDashboardLink) adminDashboardLink.style.display = 'block';
-            if (userDashboardLink) userDashboardLink.style.display = 'none';
+            if (adminDashboardLink) adminDashboardLink.classList.add('show');
+            if (userDashboardLink) userDashboardLink.classList.remove('show');
         } else {
-            if (userDashboardLink) userDashboardLink.style.display = 'block';
-            if (adminDashboardLink) adminDashboardLink.style.display = 'none';
+            if (userDashboardLink) userDashboardLink.classList.add('show');
+            if (adminDashboardLink) adminDashboardLink.classList.remove('show');
         }
 
-        if (logoutLink) logoutLink.style.display = 'block';
+        if (logoutLink) logoutLink.classList.add('show');
 
         // Set up logout functionality
         const logoutBtn = document.getElementById('logout');
@@ -154,12 +154,12 @@ function updateNavigation() {
         if (getStartedButton) {
             getStartedButton.innerHTML = '<span>Go to Dashboard</span><i class="fas fa-arrow-right"></i>';
         }
-        if (authLinks) authLinks.style.display = 'block';
-        if (getStartedButton) getStartedButton.style.display = 'block';
-        if (userProfileNav) userProfileNav.style.display = 'none';
-        if (userDashboardLink) userDashboardLink.style.display = 'none';
-        if (adminDashboardLink) adminDashboardLink.style.display = 'none';
-        if (logoutLink) logoutLink.style.display = 'none';
+        if (authLinks) authLinks.classList.add('show');
+        if (getStartedButton) getStartedButton.classList.add('show');
+        if (userProfileNav) userProfileNav.classList.remove('show');
+        if (userDashboardLink) userDashboardLink.classList.remove('show');
+        if (adminDashboardLink) adminDashboardLink.classList.remove('show');
+        if (logoutLink) logoutLink.classList.remove('show');
     }
     
     // Update mobile navigation as well
@@ -177,20 +177,20 @@ function updateMobileNavigation() {
 
     if (token && user) {
         // User is logged in - hide auth links, show dashboard links
-        if (mobileAuthLinks) mobileAuthLinks.style.display = 'none';
+        if (mobileAuthLinks) mobileAuthLinks.classList.remove('show');
 
         if (user.role === 'admin') {
-            if (mobileAdminDashboardLink) mobileAdminDashboardLink.style.display = 'block';
-            if (mobileUserDashboardLink) mobileUserDashboardLink.style.display = 'none';
+            if (mobileAdminDashboardLink) mobileAdminDashboardLink.classList.add('show');
+            if (mobileUserDashboardLink) mobileUserDashboardLink.classList.remove('show');
         } else {
-            if (mobileUserDashboardLink) mobileUserDashboardLink.style.display = 'block';
-            if (mobileAdminDashboardLink) mobileAdminDashboardLink.style.display = 'none';
+            if (mobileUserDashboardLink) mobileUserDashboardLink.classList.add('show');
+            if (mobileAdminDashboardLink) mobileAdminDashboardLink.classList.remove('show');
         }
     } else {
         // User is not logged in - show auth links, hide dashboard links
-        if (mobileAuthLinks) mobileAuthLinks.style.display = 'block';
-        if (mobileUserDashboardLink) mobileUserDashboardLink.style.display = 'none';
-        if (mobileAdminDashboardLink) mobileAdminDashboardLink.style.display = 'none';
+        if (mobileAuthLinks) mobileAuthLinks.classList.add('show');
+        if (mobileUserDashboardLink) mobileUserDashboardLink.classList.remove('show');
+        if (mobileAdminDashboardLink) mobileAdminDashboardLink.classList.remove('show');
     }
 }
 

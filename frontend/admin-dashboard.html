@@ -1,215 +1,234 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - SecureReport</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="bg-overlay"></div>
-    
-    <header class="header">
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo-container">
-                    <i class="fas fa-shield-alt logo-icon"></i>
-                    <span class="logo-text">SecureReport</span>
-                </div>
-                
-                <ul class="nav-menu">
-                    <li><a href="/" class="nav-link">Home</a></li>
-                    <li><a href="/admin-dashboard" class="nav-link active">Admin Panel</a></li>
-                </ul>
-                
-                <div class="user-profile">
-                    <div id="admin-info" class="user-info"></div>
-                </div>
 
-                <!-- Mobile Hamburger Menu -->
-                <button class="hamburger-menu" id="hamburger-menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </nav>
+    <header class="header">
+      <nav class="navbar">
+        <div class="nav-container">
+          <div class="logo-container">
+            <i class="fas fa-shield-alt logo-icon"></i>
+            <span class="logo-text">SecureReport</span>
+          </div>
+
+          <ul class="nav-menu">
+            <li><a href="/" class="nav-link">Home</a></li>
+            <li>
+              <a href="/admin-dashboard" class="nav-link active">Admin Panel</a>
+            </li>
+          </ul>
+
+          <div class="user-profile">
+            <div id="admin-info" class="user-info"></div>
+            <button id="logout" class="logout-btn">
+              <i class="fas fa-sign-out-alt"></i>
+              Logout
+            </button>
+          </div>
+
+          <!-- Mobile Hamburger Menu -->
+          <button class="hamburger-menu" id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
     </header>
 
     <main class="main-content">
-        <div class="admin-dashboard">
-            <div class="dashboard-header">
-                <div class="header-content">
-                    <h1><i class="fas fa-shield-check"></i> Admin Control Center</h1>
-                    <p>Monitor and manage security reports from users worldwide</p>
-                </div>
-                
-                <div class="dashboard-stats-grid">
-                    <div class="stat-card primary">
-                        <div class="stat-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number" id="total-reports">0</div>
-                            <div class="stat-label">Total Reports</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card warning">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number" id="pending-reports">0</div>
-                            <div class="stat-label">Pending Review</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card success">
-                        <div class="stat-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number" id="geolocated-reports">0</div>
-                            <div class="stat-label">With Location</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card info">
-                        <div class="stat-icon">
-                            <i class="fas fa-camera"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-number" id="photo-reports">0</div>
-                            <div class="stat-label">Photo Evidence</div>
-                        </div>
-                    </div>
-                </div>
+      <div class="admin-dashboard">
+        <div class="dashboard-header">
+          <div class="header-content">
+            <h1><i class="fas fa-shield-check"></i> Admin Control Center</h1>
+            <p>Monitor and manage security reports from users worldwide</p>
+          </div>
+
+          <div class="dashboard-stats-grid">
+            <div class="stat-card primary">
+              <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-number" id="total-reports">0</div>
+                <div class="stat-label">Total Reports</div>
+              </div>
             </div>
-            
-            <div class="dashboard-content">
-                <div class="content-grid">
-                    <!-- Map Section -->
-                    <div class="map-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-globe-americas"></i> Global Report Locations</h3>
-                            <div class="map-controls">
-                                <button class="map-btn" id="refresh-map">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Refresh
-                                </button>
-                                <button class="map-btn" id="center-map">
-                                    <i class="fas fa-crosshairs"></i>
-                                    Center
-                                </button>
-                            </div>
-                        </div>
-                        <div id="admin-map" class="admin-map-container"></div>
-                        <div class="map-legend">
-                            <div class="legend-item">
-                                <div class="legend-marker recent"></div>
-                                <span>Recent Reports (24h)</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-marker photo"></div>
-                                <span>Photo Evidence</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-marker text"></div>
-                                <span>Text Only</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Reports Section -->
-                    <div class="reports-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-list-ul"></i> Report Management</h3>
-                            <div class="report-controls">
-                                <select id="report-status-filter" class="filter-select">
-                                    <option value="all">All Status</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="reviewed">Reviewed</option>
-                                    <option value="resolved">Resolved</option>
-                                </select>
-                                
-                                <select id="report-type-filter" class="filter-select">
-                                    <option value="all">All Types</option>
-                                    <option value="photo">Photo Reports</option>
-                                    <option value="text">Text Reports</option>
-                                    <option value="located">With Location</option>
-                                </select>
-                                
-                                <button class="action-btn primary" id="export-reports">
-                                    <i class="fas fa-download"></i>
-                                    Export
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="reports-container" id="reports-container">
-                            <!-- Reports will be loaded here -->
-                        </div>
-                        
-                        <div class="pagination" id="pagination">
-                            <!-- Pagination will be added here -->
-                        </div>
-                    </div>
-                </div>
+
+            <div class="stat-card warning">
+              <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-number" id="pending-reports">0</div>
+                <div class="stat-label">Pending Review</div>
+              </div>
             </div>
+
+            <div class="stat-card success">
+              <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-number" id="geolocated-reports">0</div>
+                <div class="stat-label">With Location</div>
+              </div>
+            </div>
+
+            <div class="stat-card info">
+              <div class="stat-icon">
+                <i class="fas fa-camera"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-number" id="photo-reports">0</div>
+                <div class="stat-label">Photo Evidence</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="dashboard-content">
+          <div class="content-grid">
+            <!-- Map Section -->
+            <div class="map-section">
+              <div class="section-header">
+                <h3>
+                  <i class="fas fa-globe-americas"></i> Global Report Locations
+                </h3>
+                <div class="map-controls">
+                  <button class="map-btn" id="refresh-map">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                  </button>
+                  <button class="map-btn" id="center-map">
+                    <i class="fas fa-crosshairs"></i>
+                    Center
+                  </button>
+                </div>
+              </div>
+              <div id="admin-map" class="admin-map-container"></div>
+              <div class="map-legend">
+                <div class="legend-item">
+                  <div class="legend-marker recent"></div>
+                  <span>Recent Reports (24h)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker photo"></div>
+                  <span>Photo Evidence</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-marker text"></div>
+                  <span>Text Only</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="reports-section">
+              <div class="section-header">
+                <h3><i class="fas fa-list-ul"></i> Report Management</h3>
+                <div class="report-controls">
+                  <select id="report-status-filter" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
+
+                  <select id="report-type-filter" class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="photo">Photo Reports</option>
+                    <option value="text">Text Reports</option>
+                    <option value="located">With Location</option>
+                  </select>
+
+                  <button class="action-btn primary" id="export-reports">
+                    <i class="fas fa-download"></i>
+                    Export
+                  </button>
+                </div>
+              </div>
+
+              <div class="reports-container" id="reports-container">
+                <!-- Reports will be loaded here -->
+              </div>
+
+              <div class="pagination" id="pagination">
+                <!-- Pagination will be added here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Report Details Modal -->
-    <div id="report-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Report Details</h3>
-                <button class="modal-close" id="close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Report details will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn secondary" id="modal-cancel">Close</button>
-                <div class="status-actions">
-                    <button class="btn warning" id="mark-pending">Mark Pending</button>
-                    <button class="btn info" id="mark-reviewed">Mark Reviewed</button>
-                    <button class="btn success" id="mark-resolved">Mark Resolved</button>
-                </div>
-            </div>
+    <div id="report-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Report Details</h3>
+          <button class="modal-close" id="close-modal">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
+        <div class="modal-body" id="modal-body">
+          <!-- Report details will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn secondary" id="modal-cancel">Close</button>
+          <div class="status-actions">
+            <button class="btn warning" id="mark-pending">Mark Pending</button>
+            <button class="btn info" id="mark-reviewed">Mark Reviewed</button>
+            <button class="btn success" id="mark-resolved">
+              Mark Resolved
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <div class="footer-logo">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>SecureReport</span>
-                    </div>
-                    <p>&copy; 2025 SecureReport. All rights reserved.</p>
-                </div>
-                
-                <div class="footer-right">
-                    <div class="footer-links">
-                        <a href="#" class="footer-link">Privacy Policy</a>
-                        <a href="#" class="footer-link">Terms of Service</a>
-                        <a href="#" class="footer-link">Support</a>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-left">
+            <div class="footer-logo">
+              <i class="fas fa-shield-alt"></i>
+              <span>SecureReport</span>
             </div>
+            <p>&copy; 2025 SecureReport. All rights reserved.</p>
+          </div>
+
+          <div class="footer-right">
+            <div class="footer-links">
+              <a href="#" class="footer-link">Privacy Policy</a>
+              <a href="#" class="footer-link">Terms of Service</a>
+              <a href="#" class="footer-link">Support</a>
+            </div>
+          </div>
         </div>
+      </div>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="js/main.js"></script>
     <script src="js/admin-dashboard.js"></script>
-</body>
+  </body>
 </html>
