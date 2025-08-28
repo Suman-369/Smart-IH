@@ -40,7 +40,6 @@
 │   │   │   ├── auth.js              # Auth routes
 │   │   │   └── report.js            # Report routes
 │   │   ├── services/
-│   │   │   ├── email.service.js     # Email service
 │   │   │   └── storage.service.js   # File storage
 │   │   ├── middleware/
 │   │   │   └── auth.js              # Authentication middleware
@@ -52,7 +51,6 @@
 ├── frontend/
 │   ├── js/
 │   │   ├── auth.js                  # Authentication logic
-│   │   ├── otp-verification.js      # OTP verification
 │   │   ├── main.js                  # Main JavaScript
 │   │   ├── user-dashboard.js        # User dashboard
 │   │   └── admin-dashboard.js       # Admin dashboard
