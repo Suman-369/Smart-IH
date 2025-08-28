@@ -4,7 +4,6 @@
 ## Features
 
 - **User Registration**: Secure user registration with email verification
-- **OTP Verification**: 6-digit OTP sent via email for account verification
 - **User Authentication**: JWT-based authentication system
 - **Report Management**: Users can submit and manage reports
 - **Admin Dashboard**: Admin interface for managing reports
