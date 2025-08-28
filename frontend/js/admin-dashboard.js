@@ -55,8 +55,6 @@ function initializeMap() {
   const defaultLng = 78.9629;
 
   adminMap = L.map("admin-map").setView([defaultLat, defaultLng], 5);
-
-  // Add dark theme tiles
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -65,9 +63,8 @@ function initializeMap() {
   }).addTo(adminMap);
 }
 
-// Setup event listeners
 function setupEventListeners() {
-  // Logout functionality
+  // Logout
   document.getElementById("logout").addEventListener("click", function (e) {
     e.preventDefault();
     localStorage.removeItem("token");
@@ -98,23 +95,16 @@ function setupEventListeners() {
 
   if (closeModalBtn) {
     closeModalBtn.addEventListener("click", () => {
-      console.log("Close modal button clicked");
       closeModal();
     });
-  } else {
-    console.error("Close modal button not found!");
   }
 
   if (modalCancelBtn) {
     modalCancelBtn.addEventListener("click", () => {
-      console.log("Modal cancel button clicked");
       closeModal();
     });
-  } else {
-    console.error("Modal cancel button not found!");
   }
-
-  // Status change buttons
+  // Status change  section
   document
     .getElementById("mark-pending")
     .addEventListener("click", () => updateReportStatus("pending"));
@@ -125,13 +115,10 @@ function setupEventListeners() {
     .getElementById("mark-resolved")
     .addEventListener("click", () => updateReportStatus("resolved"));
 
-  // Close modal on outside click
   document
     .getElementById("report-modal")
     .addEventListener("click", function (e) {
-      console.log("Modal clicked:", e.target);
       if (e.target === this) {
-        console.log("Closing modal on outside click");
         closeModal();
       }
     });
@@ -168,19 +155,10 @@ async function loadAllReports() {
     if (response.ok) {
       allReports = data.reports || [];
       filteredReports = [...allReports];
-
-      console.log(`Loaded ${allReports.length} reports`);
-
       if (allReports.length === 0) {
-        showMessage(
-          "📊 No reports found in the database yet. Reports will appear here as users submit them.",
-          false
-        );
+        showMessage("📊 No reports found ", false);
       } else {
-        showMessage(
-          `✅ Successfully loaded ${allReports.length} reports from database.`,
-          false
-        );
+        showMessage(`Total  ${allReports.length} Reports`, false);
       }
 
       updateStatistics();
@@ -200,7 +178,6 @@ async function loadAllReports() {
       showMessage(errorMessage, true);
     }
   } catch (error) {
-    console.error("Error loading reports:", error);
     showMessage("An error occurred while loading reports", true);
   } finally {
     hideLoading();
@@ -225,11 +202,9 @@ function updateStatistics() {
   document.getElementById("geolocated-reports").textContent = geolocatedReports;
   document.getElementById("photo-reports").textContent = photoReports;
 
-  // Animate numbers
   animateNumbers();
 }
 
-// Animate statistics numbers
 function animateNumbers() {
   const numbers = document.querySelectorAll(".stat-number");
   numbers.forEach((number) => {
@@ -247,9 +222,8 @@ function animateNumbers() {
   });
 }
 
-// Update map markers
+// Mark in the map to in location from where the photo will be uploaded
 function updateMapMarkers() {
-  // Clear existing markers
   reportMarkers.forEach((marker) => adminMap.removeLayer(marker));
   reportMarkers = [];
 
@@ -269,7 +243,7 @@ function updateMapMarkers() {
   }
 }
 
-// Create a marker for a report
+// Create a mark for a report
 function createReportMarker(report) {
   const isRecent =
     new Date(report.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -489,7 +463,7 @@ function renderReports() {
                   report.location
                     ? `<button class="action-btn view" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
                     <i class=\"fas fa-map-marked-alt\"></i>
-                    View Details
+                    View Location
                 </button>`
                     : `<button class=\"action-btn view\" onclick=\"viewReportDetails('${report._id}')\">\n                    <i class=\\"fas fa-eye\\"></i>\n                    View Details\n                </button>`
                 }
@@ -687,17 +661,13 @@ function viewReportDetails(reportId) {
 
   // Show modal using proper CSS classes
   const modal = document.getElementById("report-modal");
-  console.log("Modal element:", modal);
   modal.classList.add("show");
-  console.log("Modal show class added");
 }
 
 // Close modal
 function closeModal() {
-  console.log("Closing modal");
   const modal = document.getElementById("report-modal");
   modal.classList.remove("show");
-  console.log("Modal show class removed");
 }
 
 // Update report status
@@ -727,13 +697,12 @@ async function updateReportStatus(newStatus) {
 
       showMessage(`Report status updated to ${newStatus}`, false);
       closeModal();
-      filterReports(); // Refresh the display
+      filterReports(); 
       updateStatistics();
     } else {
       showMessage(data.message || "Failed to update report status", true);
     }
   } catch (error) {
-    console.error("Error updating report status:", error);
     showMessage("Failed to update report status", true);
   }
 }
@@ -774,7 +743,6 @@ async function quickStatusUpdate(reportId) {
       showMessage(data.message || "Failed to update report status", true);
     }
   } catch (error) {
-    console.error("Error updating report status:", error);
     showMessage("Failed to update report status", true);
   }
 }
@@ -796,14 +764,14 @@ function centerMap() {
   }
 }
 
-// Export reports
+// Export reports on Excel
 function exportReports() {
   if (filteredReports.length === 0) {
     showMessage("No reports to export", true);
     return;
   }
 
-  // Create CSV content
+  // Create CSV  Excel Export
   const headers = [
     "ID",
     "Title",
@@ -885,16 +853,13 @@ function showMessage(message, isError = false) {
             <i class="fas fa-times"></i>
         </button>
     `;
-
-  // Add to page
   document.body.appendChild(messageDiv);
 
-  // Remove after 5 seconds
   setTimeout(() => {
     if (messageDiv.parentElement) {
       messageDiv.remove();
     }
-  }, 5000);
+  }, 3000);
 }
 
 // Global functions for onclick handlers
@@ -907,14 +872,4 @@ window.viewOnMap = function (lat, lng) {
   window.open(mapUrl, "_blank");
 };
 
-// Test function to check if modal works
-window.testModal = function () {
-  console.log("Testing modal...");
-  const modal = document.getElementById("report-modal");
-  if (modal) {
-    modal.classList.add("show");
-    console.log("Modal should be visible now");
-  } else {
-    console.error("Modal not found!");
-  }
-};
+
