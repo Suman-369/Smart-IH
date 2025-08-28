@@ -16,7 +16,6 @@
 - **Node.js** with Express.js
 - **MongoDB** with Mongoose ODM
 - **JWT** for authentication
-- **Nodemailer** for email services
 - **bcryptjs** for password hashing
 
 ### Frontend
