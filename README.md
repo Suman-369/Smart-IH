@@ -59,7 +59,6 @@
 │   ├── index.html                   # Landing page
 │   ├── login.html                   # Login page
 │   ├── register.html                # Registration page
-│   ├── verify-otp.html              # OTP verification page
 │   ├── user-dashboard.html          # User dashboard
 │   └── admin-dashboard.html         # Admin dashboard
 └── README.md
@@ -82,8 +81,6 @@
 ## User Flow
 
 1. **Registration**: User fills registration form
-2. **OTP Generation**: System generates 6-digit OTP and sends via email
-3. **Email Verification**: User enters OTP on verification page
 4. **Account Activation**: Account is activated upon successful OTP verification
 5. **Login**: User can now login with email and password
 6. **Dashboard**: Access to user dashboard and report management
@@ -94,7 +91,6 @@
 
 - Node.js (v14 or higher)
 - MongoDB (running locally or cloud instance)
-- Gmail account for email service
 
 ### Installation
 
