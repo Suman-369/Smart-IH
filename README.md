@@ -134,8 +134,7 @@ Required variables:
 
 - `MONGODB_URI` - MongoDB connection string
 - `JWT_SECRET` - Secret key for JWT tokens
-- `MAIL_USER` - Gmail address for sending emails
-- `MAIL_PASS` - Gmail app password
+
 
 ## Security Features
 
@@ -169,6 +168,4 @@ npm run dev
 4. Test thoroughly
 5. Submit a pull request
 
-## License
 
-This project is licensed under the ISC License.
