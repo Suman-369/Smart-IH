@@ -1,6 +1,5 @@
 # SecureReport
 
-A secure reporting system with user authentication and OTP verification.
 
 ## Features
 
