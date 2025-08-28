@@ -6,6 +6,7 @@ let currentPage = 1;
 const reportsPerPage = 10;
 let selectedImages = [];
 let userLocation = null;
+let previousReports = []; // Store previous reports to detect changes
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
@@ -60,6 +61,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Start location refresh timer
   startLocationRefresh();
+
+  // Start reports refresh timer to sync with admin updates
+  startReportsRefresh();
+
+  // Apply initial filter after a short delay to ensure reports are loaded
+  setTimeout(() => {
+    filterReports();
+  }, 1000);
 });
 
 // Initialize location detection
@@ -351,6 +360,25 @@ function startLocationRefresh() {
   }, 300000); // 5 minutes
 }
 
+// Refresh reports periodically to sync with admin updates
+function startReportsRefresh() {
+  // Refresh reports every 30 seconds to sync with admin status updates
+  setInterval(() => {
+    console.log("Refreshing reports to sync with admin updates...");
+    // Show a subtle indicator that auto-refresh is happening
+    const refreshBtn = document.querySelector(".refresh-btn");
+    if (refreshBtn && !refreshBtn.disabled) {
+      refreshBtn.style.opacity = "0.6";
+      setTimeout(() => {
+        if (refreshBtn) {
+          refreshBtn.style.opacity = "1";
+        }
+      }, 1000);
+    }
+    loadUserReports();
+  }, 30000); // 30 seconds
+}
+
 // Setup all event listeners
 function setupEventListeners() {
   // Try location again button
@@ -532,6 +560,9 @@ function showSuccessAnimation(message, callback) {
   successContainer.className = "success-animation-container";
 
   successContainer.innerHTML = `
+        <button class="success-close-btn" onclick="closeSuccessModal()">
+            <i class="fas fa-times"></i>
+        </button>
         <div class="success-animation">
             <div class="success-checkmark">
                 <div class="check-icon">
@@ -561,10 +592,21 @@ function showSuccessAnimation(message, callback) {
     successContainer.classList.add("animate");
   }, 100);
 
-  // Auto redirect after animation
+  // Auto redirect after animation (increased time for better UX)
   setTimeout(() => {
     if (callback) callback();
-  }, 3000);
+  }, 5000);
+}
+
+// Close success modal
+function closeSuccessModal() {
+  const overlay = document.querySelector(".success-overlay");
+  if (overlay) {
+    overlay.classList.remove("show");
+    setTimeout(() => {
+      overlay.remove();
+    }, 300);
+  }
 }
 
 // Submit a new report
@@ -721,7 +763,7 @@ async function loadUserReports() {
   const token = localStorage.getItem("token");
   if (!token) {
     window.location.href = "/login";
-    return;
+    return Promise.reject("No token");
   }
 
   try {
@@ -738,6 +780,11 @@ async function loadUserReports() {
     if (response.ok) {
       const reportsContainer = document.getElementById("reports-container");
       const totalReportsElement = document.getElementById("total-reports");
+
+      // Check for status changes
+      if (previousReports.length > 0) {
+        checkForStatusChanges(data.reports);
+      }
 
       if (data.reports && data.reports.length > 0) {
         totalReportsElement.textContent = data.reports.length;
@@ -807,20 +854,22 @@ async function loadUserReports() {
 
                         <div class="report-footer">
                             <div class="report-status">
-                                <span class="status-badge pending">
-                                    <i class="fas fa-clock"></i>
-                                    Pending Review
+                                <span class="status-badge ${
+                                  report.status || "pending"
+                                }">
+                                    <i class="fas fa-${getStatusIcon(
+                                      report.status || "pending"
+                                    )}"></i>
+                                    ${getStatusText(report.status || "pending")}
                                 </span>
                             </div>
                             <div class="report-actions">
-                                ${
-                                  report.location
-                                    ? `<button class="action-btn view-btn" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
-                                    <i class=\"fas fa-map-marked-alt\"></i>
-                                    View Details
-                                </button>`
-                                    : `<button class=\"action-btn view-btn\" onclick=\"viewReportDetails('${report._id}')\">\n                                    <i class=\\"fas fa-eye\\"></i>\n                                    View Details\n                                </button>`
-                                }
+                                <button class="action-btn view-btn" onclick="viewReportDetails('${
+                                  report._id
+                                }')">
+                                    <i class="fas fa-eye"></i>
+                                    View 
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -839,12 +888,20 @@ async function loadUserReports() {
                     </div>
                 `;
       }
+
+      // Store current reports for next comparison
+      previousReports = data.reports || [];
+
+      // Apply current filter after loading reports
+      filterReports();
     } else {
       showMessage(data.message || "Failed to load reports", true);
+      return Promise.reject(data.message || "Failed to load reports");
     }
   } catch (error) {
     console.error("Error loading reports:", error);
     showMessage("An error occurred while loading reports", true);
+    return Promise.reject(error);
   }
 }
 
@@ -858,10 +915,10 @@ function filterReports() {
 
     switch (filterValue) {
       case "photo":
-        show = card.querySelector(".photo") !== null;
+        show = card.querySelector(".report-type-badge.photo") !== null;
         break;
       case "text":
-        show = card.querySelector(".text") !== null;
+        show = card.querySelector(".report-type-badge.text") !== null;
         break;
       case "recent":
         // Show reports from last 7 days
@@ -878,9 +935,9 @@ function filterReports() {
     }
 
     if (show) {
-      card.classList.add("show");
+      card.style.display = "block";
     } else {
-      card.classList.remove("show");
+      card.style.display = "none";
     }
   });
 }
@@ -923,118 +980,160 @@ function showReportDetailsModal(report) {
   modalOverlay.className = "modal-overlay";
   modalOverlay.id = "report-details-modal";
 
-  // Create modal content
+  // Create modal content with improved UI
   modalOverlay.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content report-details-modal">
             <div class="modal-header">
-                <h3>Report Details</h3>
+                <h3><i class="fas fa-file-alt"></i> Report Details</h3>
                 <button class="modal-close" onclick="closeReportDetailsModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <div class="modal-body">
-                <div class="report-details-grid">
-                    <div class="detail-section">
-                        <h4>Report Information</h4>
-                        <div class="detail-item">
-                            <span class="detail-label">Report Type:</span>
-                            <span class="detail-value ${
-                              report.reportType === "photo" ? "photo" : "text"
-                            }">
-                                <i class="fas fa-${
-                                  report.reportType === "photo"
-                                    ? "camera"
-                                    : "file-text"
-                                }"></i>
-                                ${
-                                  report.reportType === "photo"
-                                    ? "Photo Report"
-                                    : "Text Report"
-                                }
-                            </span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Submitted:</span>
-                            <span class="detail-value">${new Date(
-                              report.createdAt
-                            ).toLocaleString()}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Status:</span>
-                            <span class="detail-value status-badge pending">
-                                <i class="fas fa-clock"></i>
-                                Pending Review
-                            </span>
+                <div class="report-details-container">
+                    <!-- Report Information Section -->
+                    <div class="report-info-section">
+                        <div class="info-card">
+                            <div class="info-header">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Report Information</span>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-row">
+                                    <div class="info-label">Report Type</div>
+                                    <div class="info-value type-badge ${
+                                      report.reportType === "photo"
+                                        ? "photo"
+                                        : "text"
+                                    }">
+                                        <i class="fas fa-${
+                                          report.reportType === "photo"
+                                            ? "camera"
+                                            : "file-text"
+                                        }"></i>
+                                        <span>${
+                                          report.reportType === "photo"
+                                            ? "Photo Report"
+                                            : "Text Report"
+                                        }</span>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Submitted</div>
+                                    <div class="info-value">${new Date(
+                                      report.createdAt
+                                    ).toLocaleString()}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value">
+                                        <span class="status-badge ${
+                                          report.status || "pending"
+                                        }">
+                                            <i class="fas fa-${getStatusIcon(
+                                              report.status || "pending"
+                                            )}"></i>
+                                            ${getStatusText(
+                                              report.status || "pending"
+                                            ).toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="detail-section">
-                        <h4>Content</h4>
-                        <div class="detail-item full-width">
-                            <span class="detail-label">Title:</span>
-                            <span class="detail-value">${
-                              report.title || "No title provided"
-                            }</span>
-                        </div>
-                        <div class="detail-item full-width">
-                            <span class="detail-label">Description:</span>
-                            <p class="detail-value description-text">${
-                              report.description
-                            }</p>
+                    <!-- Content Section -->
+                    <div class="content-section">
+                        <div class="content-card">
+                            <div class="content-header">
+                                <i class="fas fa-align-left"></i>
+                                <span>Content</span>
+                            </div>
+                            <div class="content-body">
+                                <div class="content-item">
+                                    <div class="content-label">Title</div>
+                                    <div class="content-value">${
+                                      report.title || "No title provided"
+                                    }</div>
+                                </div>
+                                <div class="content-item">
+                                    <div class="content-label">Description</div>
+                                    <div class="content-value description-box">${
+                                      report.description
+                                    }</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Location Section -->
                     ${
                       report.location
                         ? `
-                    <div class="detail-section">
-                        <h4>Location</h4>
-                        <div class="detail-item">
-                            <span class="detail-label">Latitude:</span>
-                            <span class="detail-value">${report.location.lat.toFixed(
-                              6
-                            )}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Longitude:</span>
-                            <span class="detail-value">${report.location.lng.toFixed(
-                              6
-                            )}</span>
-                        </div>
-                        <div class="detail-item full-width">
-                            <button class="view-map-btn" onclick="viewOnMap(${
-                              report.location.lat
-                            }, ${report.location.lng})">
-                                <i class="fas fa-map-marked-alt"></i>
-                                View on Map
-                            </button>
+                    <div class="location-section">
+                        <div class="location-card">
+                            <div class="location-header">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Location</span>
+                            </div>
+                            <div class="location-body">
+                                <div class="location-coords">
+                                    <div class="coord-item">
+                                        <span class="coord-label">Latitude:</span>
+                                        <span class="coord-value">${report.location.lat.toFixed(
+                                          6
+                                        )}</span>
+                                    </div>
+                                    <div class="coord-item">
+                                        <span class="coord-label">Longitude:</span>
+                                        <span class="coord-value">${report.location.lng.toFixed(
+                                          6
+                                        )}</span>
+                                    </div>
+                                </div>
+                                <button class="view-map-btn" onclick="viewOnMap(${
+                                  report.location.lat
+                                }, ${report.location.lng})">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    View on Map
+                                </button>
+                            </div>
                         </div>
                     </div>
                     `
                         : ""
                     }
 
+                    <!-- Evidence Images Section -->
                     ${
                       report.imageUrl && report.imageUrl.length > 0
                         ? `
-                    <div class="detail-section">
-                        <h4>Evidence Images (${report.imageUrl.length})</h4>
-                        <div class="image-gallery">
-                            ${report.imageUrl
-                              .map(
-                                (imageUrl, index) => `
-                                <div class="gallery-item">
-                                    <img src="${imageUrl}" alt="Evidence ${
-                                  index + 1
-                                }" onclick="openImageModal('${imageUrl}')">
-                                    <div class="image-overlay">
-                                        <i class="fas fa-search-plus"></i>
+                    <div class="evidence-section">
+                        <div class="evidence-card">
+                            <div class="evidence-header">
+                                <i class="fas fa-images"></i>
+                                <span>Evidence Images (${
+                                  report.imageUrl.length
+                                })</span>
+                            </div>
+                            <div class="evidence-gallery">
+                                ${report.imageUrl
+                                  .map(
+                                    (imageUrl, index) => `
+                                    <div class="evidence-item" onclick="openImageModal('${imageUrl}')">
+                                        <img src="${imageUrl}" alt="Evidence ${
+                                      index + 1
+                                    }">
+                                        <div class="evidence-overlay">
+                                            <i class="fas fa-search-plus"></i>
+                                        </div>
                                     </div>
-                                </div>
-                            `
-                              )
-                              .join("")}
+                                `
+                                  )
+                                  .join("")}
+                            </div>
                         </div>
                     </div>
                     `
@@ -1044,7 +1143,7 @@ function showReportDetailsModal(report) {
             </div>
             
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeReportDetailsModal()">
+                <button class="close-btn" onclick="closeReportDetailsModal()">
                     <i class="fas fa-times"></i>
                     Close
                 </button>
@@ -1131,7 +1230,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 // Show message to user
-function showMessage(message, isError = false) {
+function showMessage(message, isError = false, duration = 5000) {
   // Create message element
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${isError ? "error" : "success"}`;
@@ -1150,12 +1249,12 @@ function showMessage(message, isError = false) {
   // Add to page
   document.body.appendChild(messageDiv);
 
-  // Remove after 5 seconds
+  // Remove after specified duration
   setTimeout(() => {
     if (messageDiv.parentElement) {
       messageDiv.remove();
     }
-  }, 5000);
+  }, duration);
 }
 
 // Copy coordinates to clipboard
@@ -1182,7 +1281,86 @@ function copyCoordinates() {
   }
 }
 
+// Helper function to get status icon
+function getStatusIcon(status) {
+  switch (status) {
+    case "pending":
+      return "clock";
+    case "reviewed":
+      return "eye";
+    case "resolved":
+      return "check-circle";
+    default:
+      return "clock";
+  }
+}
+
+// Helper function to get status text
+function getStatusText(status) {
+  switch (status) {
+    case "pending":
+      return "Pending Review";
+    case "reviewed":
+      return "Under Review";
+    case "resolved":
+      return "Resolved";
+    default:
+      return "Pending Review";
+  }
+}
+
+// Check for status changes and notify user
+function checkForStatusChanges(currentReports) {
+  const statusChanges = [];
+
+  currentReports.forEach((currentReport) => {
+    const previousReport = previousReports.find(
+      (p) => p._id === currentReport._id
+    );
+    if (previousReport && previousReport.status !== currentReport.status) {
+      statusChanges.push({
+        reportId: currentReport._id,
+        oldStatus: previousReport.status || "pending",
+        newStatus: currentReport.status || "pending",
+        title:
+          currentReport.title ||
+          currentReport.description.substring(0, 30) + "...",
+      });
+    }
+  });
+
+  // Show notifications for status changes
+  statusChanges.forEach((change) => {
+    const statusText = getStatusText(change.newStatus);
+    const icon = getStatusIcon(change.newStatus);
+
+    showMessage(
+      `📋 Report "${change.title}" status updated to: ${statusText}`,
+      false,
+      8000 // Show for 8 seconds
+    );
+  });
+}
+
+// Manual refresh function for reports
+function refreshReports() {
+  const refreshBtn = document.querySelector(".refresh-btn");
+  if (refreshBtn) {
+    refreshBtn.classList.add("loading");
+    refreshBtn.disabled = true;
+  }
+
+  loadUserReports().finally(() => {
+    if (refreshBtn) {
+      refreshBtn.classList.remove("loading");
+      refreshBtn.disabled = false;
+    }
+  });
+}
+
 // Global function to remove images (called from onclick)
 window.removeImage = removeImage;
 window.viewReportDetails = viewReportDetails;
 window.copyCoordinates = copyCoordinates;
+window.closeSuccessModal = closeSuccessModal;
+window.refreshReports = refreshReports;
