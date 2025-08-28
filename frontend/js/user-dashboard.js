@@ -813,12 +813,14 @@ async function loadUserReports() {
                                 </span>
                             </div>
                             <div class="report-actions">
-                                <button class="action-btn view-btn" onclick="viewReportDetails('${
-                                  report._id
-                                }')">
-                                    <i class="fas fa-eye"></i>
-                                    View
-                                </button>
+                                ${
+                                  report.location
+                                    ? `<button class="action-btn view-btn" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
+                                    <i class=\"fas fa-map-marked-alt\"></i>
+                                    View Details
+                                </button>`
+                                    : `<button class=\"action-btn view-btn\" onclick=\"viewReportDetails('${report._id}')\">\n                                    <i class=\\"fas fa-eye\\"></i>\n                                    View Details\n                                </button>`
+                                }
                             </div>
                         </div>
                     </div>

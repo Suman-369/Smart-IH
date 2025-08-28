@@ -156,8 +156,6 @@ async function loadAllReports() {
 
   try {
     showLoading();
-    console.log("Fetching reports for admin:", user.name);
-
     const response = await fetch("/api/reports/all", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -166,15 +164,7 @@ async function loadAllReports() {
       },
     });
 
-    console.log("Response status:", response.status);
-    console.log(
-      "Response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
-
     const data = await response.json();
-    console.log("Response data:", data);
-
     if (response.ok) {
       allReports = data.reports || [];
       filteredReports = [...allReports];
@@ -495,12 +485,14 @@ function renderReports() {
             </div>
             
             <div class="report-card-actions">
-                <button class="action-btn view" onclick="viewReportDetails('${
-                  report._id
-                }')">
-                    <i class="fas fa-eye"></i>
+                ${
+                  report.location
+                    ? `<button class="action-btn view" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
+                    <i class=\"fas fa-map-marked-alt\"></i>
                     View Details
-                </button>
+                </button>`
+                    : `<button class=\"action-btn view\" onclick=\"viewReportDetails('${report._id}')\">\n                    <i class=\\"fas fa-eye\\"></i>\n                    View Details\n                </button>`
+                }
                 <button class="action-btn edit" onclick="quickStatusUpdate('${
                   report._id
                 }')">
@@ -910,6 +902,10 @@ window.viewReportDetails = viewReportDetails;
 window.centerMapOnReport = centerMapOnReport;
 window.quickStatusUpdate = quickStatusUpdate;
 window.changePage = changePage;
+window.viewOnMap = function (lat, lng) {
+  const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+  window.open(mapUrl, "_blank");
+};
 
 // Test function to check if modal works
 window.testModal = function () {
