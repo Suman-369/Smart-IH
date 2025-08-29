@@ -2476,6 +2476,7 @@ body {
   line-height: 1.5;
   margin-bottom: 1rem;
   display: -webkit-box;
+  line-clamp: 3;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -2985,6 +2986,52 @@ body {
   max-height: 600px;
   overflow-y: auto;
   margin-bottom: 1rem;
+  /* Improve scroll experience and prevent layout jumps */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--border-color) transparent; /* Firefox */
+  -webkit-overflow-scrolling: touch; /* iOS smooth */
+  overscroll-behavior: contain; /* prevent parent scroll chaining */
+  scrollbar-gutter: stable both-edges; /* stabilize space for scrollbar */
+  padding-right: 4px; /* breathing room so thumb doesn't overlap content */
+}
+
+/* Professional scrollbar styling - WebKit (Chrome, Edge, Safari) */
+.reports-container::-webkit-scrollbar {
+  width: 10px;
+}
+.reports-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.reports-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.reports-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.35);
+  border: 2px solid rgba(0, 255, 136, 0.25);
+}
+
+/* Global scrollbar polish for the page's right side scrollbar */
+html {
+  scrollbar-gutter: stable both-edges; /* avoid content shift when scrollbar appears */
+}
+body::-webkit-scrollbar {
+  width: 12px;
+}
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.35);
+  border: 3px solid rgba(0, 255, 136, 0.25);
 }
 
 .admin-report-card {
@@ -3106,6 +3153,7 @@ body {
   line-height: 1.5;
   margin-bottom: 1rem;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -4270,6 +4318,82 @@ body {
   .reports-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+}
+
+/* --- Mobile finetuning: prevent overflow, improve wrapping, and compact sizing --- */
+@media (max-width: 768px) {
+  /* Avoid horizontal scroll and tighten side paddings */
+  html,
+  body,
+  .main-content,
+  .container,
+  .dashboard,
+  .reports-section,
+  .map-section {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Reduce crowded navbar; allow wrap if needed */
+  .nav-container {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* Hide desktop CTA to declutter header on phones */
+  .contact-button {
+    display: none;
+  }
+
+  /* Comfortable map height on phones */
+  .admin-map-container,
+  .map-container {
+    height: 260px;
+  }
+
+  /* Increase touch targets */
+  .nav-link,
+  .btn,
+  .action-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ensure long inline text never overflows */
+  .report-title,
+  .report-description,
+  .detail-value,
+  .content-value,
+  .user-email,
+  .image-name {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Slightly smaller maps for narrow devices */
+  .admin-map-container,
+  .map-container {
+    height: 220px;
+  }
+
+  /* Prevent dropdown from overflowing viewport width */
+  .profile-dropdown {
+    width: min(95vw, 320px);
+  }
+
+  /* Compact card text */
+  .feature-card h3 {
+    font-size: 1.05rem;
+  }
+  .feature-card p {
+    font-size: 0.95rem;
+  }
+  .report-card-content .report-title {
+    font-size: 0.95rem;
   }
 }
 

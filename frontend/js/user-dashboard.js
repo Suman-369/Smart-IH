@@ -6,11 +6,10 @@ let currentPage = 1;
 const reportsPerPage = 10;
 let selectedImages = [];
 let userLocation = null;
-let previousReports = []; // Store previous reports to detect changes
+let previousReports = []; 
 
-// Initialize dashboard when DOM is loaded
+// User Dashboard
 document.addEventListener("DOMContentLoaded", function () {
-  // Check if user is logged in
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -26,13 +25,10 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
         <div class="user-details">
             <div class="user-name">${user.name}</div>
-            <div class="user-role">${user.role}</div>
         </div>
     `;
   const userInfoDiv = document.getElementById("user-info");
-  // Debug log for troubleshooting
-  console.log("Loaded user from localStorage:", user);
-  // Display user info or fallback
+
   if (user && user.name && user.role) {
     userInfoDiv.innerHTML = `
                 <div class="user-avatar">
@@ -40,11 +36,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
                 <div class="user-details">
                     <div class="user-name">${user.name}</div>
-                    <div class="user-role">${user.role}</div>
                 </div>
             `;
   } else {
-    userInfoDiv.innerHTML = `<div class="user-details">Profile info not available</div>`;
+    userInfoDiv.innerHTML = `<div class="user-details">Please Login First</div>`;
+    window.location.href = "/login";
+    return;
   }
 
   // Initialize location detection immediately when dashboard loads
@@ -71,9 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }, 1000);
 });
 
-// Initialize location detection
+// location detection
 function initLocationDetection() {
-  // Check if geolocation is supported
+  // Check if geolocation is supported or Not
   if (!navigator.geolocation) {
     showLocationStatus("denied");
     updateLocationBanner("error", "Geolocation not supported");
@@ -81,12 +78,9 @@ function initLocationDetection() {
     return;
   }
 
-  // Initialize banner with checking status
   updateLocationBanner("loading", "Checking location access...");
-
-  // Show welcome message about location capture
   showMessage(
-    "📍 Welcome! We'll capture your location to ensure accurate reporting. Please allow location access when prompted.",
+    "📍 Welcome! We'll capture your location to ensure accurate reporting.",
     false
   );
 
@@ -188,7 +182,6 @@ function requestLocation() {
       );
     },
     (error) => {
-      console.error("Location error:", error);
       showLocationStatus("denied");
 
       let errorMessage = "";
@@ -219,7 +212,7 @@ function requestLocation() {
       updateLocationBanner("error", bannerMessage);
       showMessage(errorMessage, true);
 
-      // Add retry button functionality
+      //  retry  functionality
       const tryAgainBtn = document.getElementById("try-location");
       if (tryAgainBtn) {
         tryAgainBtn.style.display = "block";
@@ -229,8 +222,8 @@ function requestLocation() {
     },
     {
       enableHighAccuracy: true,
-      timeout: 20000, // Increased timeout to 20 seconds for better reliability
-      maximumAge: 300000, // 5 minutes
+      timeout: 20000, 
+      maximumAge: 300000, 
     }
   );
 }

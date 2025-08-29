@@ -32,6 +32,10 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   loadAllReports();
 
+  // Apply sticky layout for reports section (desktop only) without CSS edits
+  applyStickyLayout();
+  window.addEventListener("resize", applyStickyLayout);
+
   // Mobile Hamburger Menu Toggle
   const hamburger = document.getElementById("hamburger-menu");
   const mobileNav = document.getElementById("mobile-nav-menu");
@@ -490,6 +494,9 @@ function renderReports() {
     .join("");
 
   renderPagination();
+
+  // Lightweight, efficient sequential reveal animation
+  animateReportList();
 }
 
 // Render pagination
@@ -697,7 +704,7 @@ async function updateReportStatus(newStatus) {
 
       showMessage(`Report status updated to ${newStatus}`, false);
       closeModal();
-      filterReports(); 
+      filterReports();
       updateStatistics();
     } else {
       showMessage(data.message || "Failed to update report status", true);
@@ -872,4 +879,54 @@ window.viewOnMap = function (lat, lng) {
   window.open(mapUrl, "_blank");
 };
 
+// Make reports section sticky via JS so it stays under the nav (desktop only)
+function applyStickyLayout() {
+  const reportsSection = document.querySelector(".reports-section");
+  const reportsContainer = document.querySelector(
+    ".reports-section .reports-container"
+  );
+  if (!reportsSection || !reportsContainer) return;
 
+  if (window.innerWidth >= 1024) {
+    reportsSection.style.position = "sticky";
+    reportsSection.style.top = "96px"; // header (~80px) + spacing
+    reportsSection.style.maxHeight = `calc(100vh - 96px - 16px)`;
+    if (!reportsSection.style.display) reportsSection.style.display = "flex";
+    if (!reportsSection.style.flexDirection)
+      reportsSection.style.flexDirection = "column";
+    if (!reportsContainer.style.overflow)
+      reportsContainer.style.overflow = "auto";
+  } else {
+    reportsSection.style.position = "";
+    reportsSection.style.top = "";
+    reportsSection.style.maxHeight = "";
+    reportsSection.style.display = "";
+    reportsSection.style.flexDirection = "";
+    reportsContainer.style.overflow = "";
+  }
+}
+
+// Efficient one-by-one reveal using inline CSS transitions (no scroll listeners)
+function animateReportList() {
+  const cards = document.querySelectorAll(".admin-report-card");
+  if (!cards.length) return;
+
+  const baseDelayMs = 70;
+  cards.forEach((card) => {
+    card.style.opacity = "0";
+    card.style.transform = "translateY(10px)";
+    card.style.transition = "opacity 260ms ease, transform 260ms ease";
+  });
+
+  // Staggered reveal
+  cards.forEach((card, idx) => {
+    const delay = Math.min(idx * baseDelayMs, 700);
+    setTimeout(() => {
+      if (!card.isConnected) return;
+      requestAnimationFrame(() => {
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      });
+    }, delay);
+  });
+}
