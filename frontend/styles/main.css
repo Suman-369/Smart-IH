@@ -3927,6 +3927,18 @@ body::-webkit-scrollbar-thumb:hover {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+  .nav-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+  }
+  .contact-button {
+    margin-top: 0;
+    width: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
 
   .globe-container {
     width: 300px;
@@ -3940,6 +3952,9 @@ body::-webkit-scrollbar-thumb:hover {
 
   .orbit-1 {
     width: 220px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     height: 220px;
   }
 
@@ -3949,6 +3964,9 @@ body::-webkit-scrollbar-thumb:hover {
   }
 }
 
+.contact-button {
+  display: none;
+}
 @media (max-width: 768px) {
   .header {
     position: fixed;
@@ -3960,6 +3978,10 @@ body::-webkit-scrollbar-thumb:hover {
 
   .nav-container {
     padding: 0 1rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
   }
 
   .nav-menu {
@@ -4093,6 +4115,9 @@ body::-webkit-scrollbar-thumb:hover {
     transition: left 0.3s ease;
     padding: 80px 2rem 2rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .mobile-nav-menu.active {
@@ -4104,6 +4129,8 @@ body::-webkit-scrollbar-thumb:hover {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    width: 100%;
+    align-items: center;
   }
 
   .mobile-nav-menu .nav-link {
@@ -4115,12 +4142,15 @@ body::-webkit-scrollbar-thumb:hover {
     transition: all 0.3s ease;
     color: var(--text-primary);
     text-decoration: none;
+    width: 100%;
+    text-align: center;
   }
 
   .mobile-nav-menu .nav-link:hover {
     background: var(--bg-tertiary);
     color: var(--primary-green);
     transform: translateX(5px);
+    box-shadow: 0 2px 8px var(--shadow-light);
   }
 
   /* Admin Dashboard Mobile Enhancements */
