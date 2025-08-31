@@ -2982,10 +2982,27 @@ body {
 }
 
 .reports-container {
-  max-height: 600px;
-  overflow-y: auto;
   margin-bottom: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-green) var(--bg-secondary);
 }
+
+.reports-container::-webkit-scrollbar {
+  width: 6px;
+}
+.reports-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+.reports-container::-webkit-scrollbar-thumb {
+  background: var(--primary-green);
+  border-radius: 3px;
+}
+.reports-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-green);
+}
+
 
 .admin-report-card {
   background: var(--bg-tertiary);
