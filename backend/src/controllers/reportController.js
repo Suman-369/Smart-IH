@@ -145,10 +145,76 @@ async function updateReportStatus(req, res) {
   }
 }
 
+// Assign task to report (admin only)
+async function assignTask(req, res) {
+  try {
+    const reportId = req.params.id;
+    const { assignedDrone, priority, deadline, assignmentNotes } = req.body;
+    const assignedBy = req.user.id;
+
+    // Validate required fields
+    if (!assignedDrone) {
+      return res.status(400).json({
+        message: "Assigned drone is required",
+      });
+    }
+
+    // Validate priority
+    const validPriorities = ["low", "medium", "high", "urgent"];
+    if (priority && !validPriorities.includes(priority)) {
+      return res.status(400).json({
+        message: "Invalid priority. Must be one of: low, medium, high, urgent",
+      });
+    }
+
+    // Validate deadline if provided
+    if (deadline) {
+      const deadlineDate = new Date(deadline);
+      if (isNaN(deadlineDate.getTime())) {
+        return res.status(400).json({
+          message: "Invalid deadline date format",
+        });
+      }
+      if (deadlineDate <= new Date()) {
+        return res.status(400).json({
+          message: "Deadline must be in the future",
+        });
+      }
+    }
+
+    // Find and update the report
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      {
+        assignedDrone,
+        priority: priority || "medium",
+        deadline: deadline ? new Date(deadline) : undefined,
+        assignmentNotes,
+        assignedAt: new Date(),
+        assignedBy,
+      },
+      { new: true }
+    ).populate("user", "name email").populate("assignedBy", "name email");
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json({
+      message: "Task assigned successfully",
+      report,
+    });
+  } catch (error) {
+    console.error("Assign task error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
 module.exports = {
   submitReport,
   getAllReports,
   getUserReports,
   getReportById,
   updateReportStatus,
+  assignTask,
 };

@@ -16,6 +16,13 @@ const reportSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
   },
+  // Task assignment fields
+  assignedDrone: { type: String },
+  priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
+  deadline: { type: Date },
+  assignmentNotes: { type: String },
+  assignedAt: { type: Date },
+  assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   createdAt: { type: Date, default: Date.now },
 });
 

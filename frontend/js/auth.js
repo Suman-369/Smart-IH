@@ -9,13 +9,12 @@ if (window.authInitialized) {
 function initializeAuth() {
     // Handle login form submission
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Initializing auth module...');
         
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         
         if (loginForm) {
-            console.log('Setting up login form handler');
+          
             // Remove any existing listeners
             const newLoginForm = loginForm.cloneNode(true);
             loginForm.parentNode.replaceChild(newLoginForm, loginForm);
@@ -24,7 +23,7 @@ function initializeAuth() {
         }
         
         if (registerForm) {
-            console.log('Setting up register form handler');
+          
             // Remove any existing listeners
             const newRegisterForm = registerForm.cloneNode(true);
             registerForm.parentNode.replaceChild(newRegisterForm, registerForm);
@@ -36,7 +35,7 @@ function initializeAuth() {
 
 async function handleLogin(e) {
     e.preventDefault();
-    console.log('Login form submitted');
+
     
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -48,7 +47,7 @@ async function handleLogin(e) {
     submitBtn.disabled = true;
     
     try {
-        console.log('Sending login request...');
+      
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -64,11 +63,6 @@ async function handleLogin(e) {
         
         clearTimeout(timeoutId);
         
-        console.log('Login response received:', {
-            status: response.status,
-            statusText: response.statusText,
-            contentType: response.headers.get('content-type')
-        });
         
         // Check if response is JSON
         const contentType = response.headers.get('content-type');
@@ -77,7 +71,6 @@ async function handleLogin(e) {
         if (contentType && contentType.includes('application/json')) {
             try {
                 data = await response.json();
-                console.log('Login response data:', data);
             } catch (jsonError) {
                 console.error('JSON parsing error:', jsonError);
                 throw new Error('Failed to parse server response as JSON');
@@ -95,7 +88,7 @@ async function handleLogin(e) {
             localStorage.setItem('user', JSON.stringify(data.user));
             
             // Show success message
-            showMessage('Login successful! Redirecting...', false);
+            showMessage('Login successful!', false);
             
             // Redirect based on user role
             setTimeout(() => {
@@ -109,7 +102,6 @@ async function handleLogin(e) {
             showMessage(data.message || 'Login failed', true);
         }
     } catch (error) {
-        console.error('Login error:', error);
         
         if (error.name === 'AbortError') {
             showMessage('Request timed out. Please try again.', true);
@@ -153,10 +145,9 @@ async function handleRegister(e) {
     submitBtn.disabled = true;
     
     try {
-        console.log('Sending registration request with data:', { name, email }); // Don't log password
-
+    
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for registration
+        const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
         const response = await fetch('/auth/register', {
             method: 'POST',
@@ -169,12 +160,6 @@ async function handleRegister(e) {
         
         clearTimeout(timeoutId);
         
-        console.log('Registration response received:', {
-            status: response.status,
-            statusText: response.statusText,
-            contentType: response.headers.get('content-type'),
-            ok: response.ok
-        });
         
         // Check if response is JSON
         const contentType = response.headers.get('content-type');
@@ -207,7 +192,7 @@ async function handleRegister(e) {
             localStorage.setItem('user', JSON.stringify(data.user));
             
             // Show success message
-            showMessage('Registration successful! Redirecting...', false);
+            showMessage('Registration successful!', false);
             
             // Redirect based on user role
             setTimeout(() => {

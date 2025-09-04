@@ -214,6 +214,54 @@
       </div>
     </div>
 
+    <!-- Assign Task Modal -->
+    <div id="assign-modal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 740px">
+        <div class="modal-header">
+          <h3>Assign Task</h3>
+          <button class="modal-close" id="assign-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="assign-body">
+          <form id="assign-form">
+            <div class="form-group">
+              <label for="assignedDrone">Select Drone</label>
+              <select id="assignedDrone" name="assignedDrone" required>
+                <option value="" disabled selected>Select a drone</option>
+                <option value="Drone 1">Drone 1</option>
+                <option value="Drone 2">Drone 2</option>
+                <option value="Drone 3">Drone 3</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="priority">Priority</label>
+              <select id="priority" name="priority" required>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="deadline">Deadline</label>
+              <input type="date" id="deadline" name="deadline" min="" />
+            </div>
+            <div class="form-group">
+              <label for="assignmentNotes">Notes</label>
+              <textarea id="assignmentNotes" name="assignmentNotes" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn success">Assign Task</button>
+              <button type="button" class="btn secondary" id="assign-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+
     <footer class="footer">
       <div class="container">
         <div class="footer-content">

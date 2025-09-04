@@ -18,13 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Display admin info
   document.getElementById("admin-info").innerHTML = `
-        <div class="user-avatar">
-            <i class="fas fa-user-shield"></i>
-        </div>
-        <div class="user-details">
-            <div class="user-name">${user.name}</div>
-            <div class="user-role">Administrator</div>
-        </div>
+      <div class="user-avatar">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name">${user.name}</div>
+      </div>
     `;
 
   // Initialize components
@@ -108,6 +107,14 @@ function setupEventListeners() {
       closeModal();
     });
   }
+  // Assign modal controls
+  const assignClose = document.getElementById("assign-close");
+  const assignCancel = document.getElementById("assign-cancel");
+  const assignForm = document.getElementById("assign-form");
+
+  if (assignClose) assignClose.addEventListener("click", closeAssignModal);
+  if (assignCancel) assignCancel.addEventListener("click", closeAssignModal);
+  if (assignForm) assignForm.addEventListener("submit", handleAssignSubmit);
   // Status change  section
   document
     .getElementById("mark-pending")
@@ -466,16 +473,19 @@ function renderReports() {
                 ${
                   report.location
                     ? `<button class="action-btn view" onclick="viewOnMap(${report.location.lat}, ${report.location.lng})">
-                    <i class=\"fas fa-map-marked-alt\"></i>
+                    <i class="fas fa-map-marked-alt"></i>
                     View Location
                 </button>`
-                    : `<button class=\"action-btn view\" onclick=\"viewReportDetails('${report._id}')\">\n                    <i class=\\"fas fa-eye\\"></i>\n                    View Details\n                </button>`
+                    : `<button class="action-btn view" onclick="viewReportDetails('${report._id}')">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>`
                 }
-                <button class="action-btn edit" onclick="quickStatusUpdate('${
+                <button class="action-btn edit" onclick="openAssignModal('${
                   report._id
                 }')">
-                    <i class="fas fa-edit"></i>
-                    Update Status
+                    <i class="fas fa-tasks"></i>
+                    Assign Task
                 </button>
                 ${
                   report.location
@@ -488,6 +498,7 @@ function renderReports() {
                     : ""
                 }
             </div>
+
         </div>
     `
     )
@@ -579,17 +590,15 @@ function centerMapOnReport(reportId) {
 
 // View report details in modal
 function viewReportDetails(reportId) {
-  console.log("Opening report details for ID:", reportId);
   const report = allReports.find((r) => r._id === reportId);
   if (!report) {
-    console.error("Report not found for ID:", reportId);
+    showMessage("Report not found", true);
     return;
   }
-  console.log("Found report:", report);
 
   const modalBody = document.getElementById("modal-body");
   if (!modalBody) {
-    console.error("Modal body element not found!");
+    showMessage("Modal error", true);
     return;
   }
   // Create a simple test content first
@@ -872,12 +881,241 @@ function showMessage(message, isError = false) {
 // Global functions for onclick handlers
 window.viewReportDetails = viewReportDetails;
 window.centerMapOnReport = centerMapOnReport;
-window.quickStatusUpdate = quickStatusUpdate;
+// window.quickStatusUpdate removed in favor of assignment flow
 window.changePage = changePage;
 window.viewOnMap = function (lat, lng) {
   const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
   window.open(mapUrl, "_blank");
 };
+
+async function handleAssignSubmit(event) {
+  event.preventDefault();
+  const modal = document.getElementById("assign-modal");
+  const form = event.target;
+  const reportId = modal.dataset.reportId;
+
+  if (!reportId) {
+    alert("Report ID missing. Cannot assign task.");
+    return;
+  }
+
+  const assignedDrone = form.assignedDrone.value;
+  const priority = form.priority.value;
+  const deadline = form.deadline.value;
+  const assignmentNotes = form.assignmentNotes.value;
+
+  if (!assignedDrone) {
+    alert("Please select a drone.");
+    return;
+  }
+
+  // Prepare payload
+  const payload = {
+    assignedDrone,
+    priority,
+    deadline: deadline || null,
+    assignmentNotes,
+  };
+
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`/api/reports/${reportId}/assign`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showMessage(`Task assigned successfully to ${assignedDrone}`, false);
+      showCelebration();
+      closeAssignModal();
+      // Reload reports to reflect changes
+      loadAllReports();
+    } else {
+      showMessage(data.message || "Failed to assign task", true);
+    }
+  } catch (error) {
+    alert("Error assigning task: " + error.message);
+  }
+}
+
+// Assignment modal handlers
+function openAssignModal(reportId) {
+  const modal = document.getElementById("assign-modal");
+  const form = document.getElementById("assign-form");
+  if (!modal || !form) return;
+
+  // Reset form
+  form.reset();
+
+  // Set minimum date for deadline (tomorrow)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+  document.getElementById("deadline").min = minDate;
+
+  // Store report ID
+  modal.dataset.reportId = reportId;
+
+  // Show modal
+  modal.classList.add("show");
+
+  // Focus on drone select
+  document.getElementById("assignedDrone").focus();
+}
+
+function closeAssignModal() {
+  const modal = document.getElementById("assign-modal");
+  if (modal) modal.classList.remove("show");
+}
+
+window.openAssignModal = openAssignModal;
+window.closeAssignModal = closeAssignModal;
+
+// Selection handlers within modal
+window.selectDrone = function (reportId, droneName, index) {
+  const modal = document.getElementById("assign-modal");
+  if (!modal) return;
+  modal.dataset.selectedDrone = droneName;
+  document
+    .querySelectorAll("#assign-body .drone-card")
+    .forEach((el) => el.classList.remove("selected"));
+  const card = document.getElementById(`drone-card-${index}`);
+  if (card) card.classList.add("selected");
+  const bar = document.getElementById("assign-confirm");
+  const selectedText = document.getElementById("assign-selected");
+  if (bar && selectedText) {
+    selectedText.textContent = `Selected: ${droneName}`;
+    bar.style.display = "flex";
+  }
+};
+
+window.cancelAssign = function () {
+  // Remove any legacy selection UI
+  const bar = document.getElementById("assign-confirm");
+  if (bar) bar.style.display = "none";
+  document
+    .querySelectorAll("#assign-body .drone-card")
+    .forEach((el) => el.classList.remove("selected"));
+  const modal = document.getElementById("assign-modal");
+  if (modal) delete modal.dataset.selectedDrone;
+};
+
+window.confirmAssign = function () {
+  const modal = document.getElementById("assign-modal");
+  if (!modal || !modal.dataset.selectedDrone || !modal.dataset.reportId) return;
+  const droneName = modal.dataset.selectedDrone;
+  const reportId = modal.dataset.reportId;
+  startAssignFlight(reportId, droneName);
+};
+
+window.startAssignFlight = function (reportId, droneName) {
+  const sky = document.getElementById("assign-sky");
+  const drone = document.getElementById("assign-drone");
+  const pulse = document.getElementById("assign-pulse");
+  if (!sky || !drone || !pulse) return;
+  sky.style.display = "block";
+
+  const width = sky.clientWidth + 160;
+
+  const keyframes = [
+    { transform: "translate(-80px, -50%) rotate(-5deg)" },
+    { transform: `translate(${width * 0.35}px, -60%) rotate(2deg)` },
+    { transform: `translate(${width * 0.65}px, -40%) rotate(-3deg)` },
+    { transform: `translate(${width}px, -50%) rotate(0deg)` },
+  ];
+
+  const anim = drone.animate(keyframes, {
+    duration: 1500,
+    easing: "ease-in-out",
+  });
+
+  pulse.animate(
+    [
+      { opacity: 0, transform: "translate(-50%, -50%) scale(0.6)" },
+      { opacity: 1, transform: "translate(-50%, -50%) scale(1.6)" },
+      { opacity: 0, transform: "translate(-50%, -50%) scale(2.4)" },
+    ],
+    { duration: 900, easing: "ease-out" }
+  );
+
+  anim.onfinish = () => {
+    closeAssignModal();
+    showMessage(`Task assigned successfully to ${droneName}`, false);
+    showCelebration();
+  };
+};
+
+function showCelebration() {
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "0";
+  container.style.top = "0";
+  container.style.width = "100%";
+  container.style.height = "100%";
+  container.style.pointerEvents = "none";
+  container.style.zIndex = "9999";
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+  container.style.backgroundColor = "rgba(0,0,0,0.5)";
+  document.body.appendChild(container);
+
+  // Add text
+  const text = document.createElement("div");
+  text.textContent = "✅ Assignment Successful!";
+  text.style.fontSize = "2rem";
+  text.style.color = "white";
+  text.style.fontWeight = "bold";
+  text.style.textAlign = "center";
+  text.style.animation = "fadeIn 0.5s ease-out";
+  container.appendChild(text);
+
+  const emojis = ["🎉", "✨", "🎊", "⭐", "🚁"];
+  const count = 20;
+  for (let i = 0; i < count; i++) {
+    const span = document.createElement("span");
+    span.textContent = emojis[i % emojis.length];
+    span.style.position = "absolute";
+    span.style.left = Math.random() * 100 + "%";
+    span.style.top = Math.random() * 100 + "%";
+    span.style.fontSize = 16 + Math.random() * 18 + "px";
+    container.appendChild(span);
+    const x = (Math.random() - 0.5) * 200;
+    const y = -200 - Math.random() * 150;
+    const rotate = (Math.random() - 0.5) * 120;
+    span.animate(
+      [
+        { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
+        {
+          transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
+          opacity: 0,
+        },
+      ],
+      { duration: 1200 + Math.random() * 600, easing: "ease-out" }
+    );
+  }
+
+  // Add CSS for fadeIn
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(() => {
+    container.remove();
+    style.remove();
+  }, 2000);
+}
 
 // Make reports section sticky via JS so it stays under the nav (desktop only)
 function applyStickyLayout() {

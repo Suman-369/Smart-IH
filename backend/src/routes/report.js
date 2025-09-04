@@ -5,6 +5,7 @@ const {
   getUserReports,
   getReportById,
   updateReportStatus,
+  assignTask,
 } = require("../controllers/reportController");
 const authMiddleware = require("../middleware/auth");
 const multer = require("multer");
@@ -33,5 +34,8 @@ router.get("/:id", authMiddleware(["user", "admin"]), getReportById);
 
 // PUT /api/reports/:id/status → update report status (auth: admin)
 router.put("/:id/status", authMiddleware(["admin"]), updateReportStatus);
+
+// PUT /api/reports/:id/assign → assign task to report (auth: admin)
+router.put("/:id/assign", authMiddleware(["admin"]), assignTask);
 
 module.exports = router;
