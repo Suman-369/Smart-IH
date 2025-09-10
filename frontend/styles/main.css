@@ -1573,8 +1573,8 @@ body {
 
 /* Auth Forms */
 .auth-container {
-  max-width: 400px;
-  margin: 8rem auto 2rem;
+  max-width: 380px;
+  margin: 5rem auto 2rem;
   padding: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1585,7 +1585,7 @@ body {
 
 .auth-header {
   background: var(--bg-tertiary);
-  padding: 1.25rem 1.5rem 1rem;
+  padding:0 0 0;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
 }
@@ -1618,11 +1618,11 @@ body {
 }
 
 .auth-container form {
-  padding: 2.5rem 3rem;
+  padding: 2rem 2.5rem;
 }
 
 .auth-footer {
-  padding: 1.5rem 3rem 2.5rem;
+  padding: 1rem 2.5rem 2rem;
   text-align: center;
   background: var(--bg-tertiary);
   border-top: 1px solid var(--border-color);
@@ -2123,7 +2123,7 @@ body {
 }
 
 .upload-area {
-  border: 2px dashed var(--primary-green);
+  border: 2px dashed var(--border-color);
   border-radius: 10px;
   padding: 1.5rem;
   text-align: center;
@@ -3002,7 +3002,6 @@ body {
 .reports-container::-webkit-scrollbar-thumb:hover {
   background: var(--primary-green);
 }
-
 
 .admin-report-card {
   background: var(--bg-tertiary);
@@ -3986,8 +3985,8 @@ body {
   }
 
   .auth-container {
-    margin: 6rem 1rem 2rem;
-    padding: 2rem;
+    margin: 4rem 1rem 2rem;
+    padding: 1rem;
   }
 
   /* Mobile-specific improvements */
@@ -4603,14 +4602,14 @@ body {
 @media (max-width: 480px) {
   .auth-container {
     width: calc(100% - 2rem);
-    margin: 5rem 1rem 1.5rem;
+    margin: 3.5rem 1rem 1.5rem;
     border-radius: 16px;
   }
   .auth-header {
-    padding: 1.5rem 1rem 1.25rem;
+    padding:0 0 0;
   }
   .auth-container form {
-    padding: 1rem 1rem 1.25rem;
+    padding: 0.75rem 1rem 1rem;
   }
   .auth-container h2 {
     font-size: 1.4rem;

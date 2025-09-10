@@ -43,22 +43,20 @@ async function submitReport(req, res) {
       report,
     });
   } catch (error) {
-    console.error("Report submission error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
-// Fetch all reports (from database, not localhost)
+// Fetch all reports (from database)
 async function getAllReports(req, res) {
   try {
     const reports = await Report.find()
       .populate("user", "name email")
       .sort({ createdAt: -1 })
-      .lean(); // lean returns plain JS objects, faster for large data sets[8]
+      .lean();
 
     res.json({ reports });
   } catch (error) {
-    console.error("Fetch all reports error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
@@ -73,7 +71,6 @@ async function getUserReports(req, res) {
 
     res.json({ reports });
   } catch (error) {
-    console.error("Fetch user reports error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
@@ -95,7 +92,6 @@ async function getReportById(req, res) {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Check if user has permission to view this report
     // Admins can view all reports, users can only view their own
     if (userRole !== "admin" && report.user._id.toString() !== userId) {
       return res.status(403).json({
@@ -105,7 +101,6 @@ async function getReportById(req, res) {
 
     res.json({ report });
   } catch (error) {
-    console.error("Fetch report by ID error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
@@ -168,19 +163,35 @@ async function assignTask(req, res) {
     }
 
     // Validate deadline if provided
-    if (deadline) {
-      const deadlineDate = new Date(deadline);
-      if (isNaN(deadlineDate.getTime())) {
-        return res.status(400).json({
-          message: "Invalid deadline date format",
-        });
-      }
-      if (deadlineDate <= new Date()) {
-        return res.status(400).json({
-          message: "Deadline must be in the future",
-        });
-      }
-    }
+  if (deadline) {
+  const deadlineDate = new Date(deadline);
+  if (isNaN(deadlineDate.getTime())) {
+    return res.status(400).json({
+      message: "Invalid deadline date format",
+    });
+  }
+
+  // Normalize both dates (ignore time)
+  const today = new Date();
+  const deadlineDateOnly = new Date(
+    deadlineDate.getFullYear(),
+    deadlineDate.getMonth(),
+    deadlineDate.getDate()
+  );
+  const todayOnly = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  // Reject only past dates
+  if (deadlineDateOnly <=  todayOnly) {
+    return res.status(400).json({
+      message: "Deadline must be today or in the future",
+    });
+  }
+}
+
 
     // Find and update the report
     const report = await Report.findByIdAndUpdate(
@@ -194,7 +205,9 @@ async function assignTask(req, res) {
         assignedBy,
       },
       { new: true }
-    ).populate("user", "name email").populate("assignedBy", "name email");
+    )
+      .populate("user", "name email")
+      .populate("assignedBy", "name email");
 
     if (!report) {
       return res.status(404).json({ message: "Report not found" });
