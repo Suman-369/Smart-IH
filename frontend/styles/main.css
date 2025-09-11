@@ -1729,6 +1729,7 @@ body {
   background: transparent;
   color: var(--primary-green);
   border: 2px solid var(--primary-green);
+  margin-right: 1rem;
 }
 
 .btn.secondary:hover {
