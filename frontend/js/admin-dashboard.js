@@ -260,9 +260,9 @@ function createReportMarker(report) {
     new Date(report.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000);
   const hasPhoto = report.imageUrl && report.imageUrl.length > 0;
 
-  let markerColor = "#00ff88"; // Default green
-  if (isRecent) markerColor = "#ff6b6b"; // Red for recent
-  else if (hasPhoto) markerColor = "#3498db"; // Blue for photo reports
+  let markerColor = "#00ff88"; 
+  if (isRecent) markerColor = "#ff6b6b"; 
+  else if (hasPhoto) markerColor = "#3498db"; 
 
   const markerIcon = L.divIcon({
     className: "custom-marker",
@@ -662,15 +662,37 @@ function viewReportDetails(reportId) {
           ? `
         <div class="detail-section">
           <h4>Photo Evidence</h4>
-          <div class="image-detail">
-            <img src="${report.imageUrl[0]}" alt="Report evidence" style="max-width: 100%; border-radius: 8px;">
-          </div>
+          ${
+            report.imageUrl.length > 1
+              ? `
+              <div class="image-carousel" style="position: relative; max-width: 100%; margin: 0 auto;">
+                <div class="carousel-container" style="position: relative; overflow: hidden; border-radius: 8px;">
+                  <img id="current-image" src="${report.imageUrl[0]}" alt="Report evidence" style="max-width: 100%; display: block; border-radius: 8px;">
+                </div>
+                <div class="carousel-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                  <button id="prev-btn" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">&larr; Prev</button>
+                  <span id="image-counter" style="font-weight: bold; color: #333;">1 of ${report.imageUrl.length}</span>
+                  <button id="next-btn" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Next &rarr;</button>
+                </div>
+              </div>
+              `
+              : `
+              <div class="image-detail">
+                <img src="${report.imageUrl[0]}" alt="Report evidence" style="max-width: 100%; border-radius: 8px;">
+              </div>
+              `
+          }
         </div>
       `
           : ""
       }
     </div>
   `;
+
+  // Set up image carousel if multiple images exist
+  if (report.imageUrl && report.imageUrl.length > 1) {
+    setupImageCarousel(report.imageUrl);
+  }
 
   // Store current report ID for status updates
   document.getElementById("report-modal").dataset.reportId = reportId;
@@ -684,6 +706,38 @@ function viewReportDetails(reportId) {
 function closeModal() {
   const modal = document.getElementById("report-modal");
   modal.classList.remove("show");
+}
+
+// Set up image carousel for multiple images
+function setupImageCarousel(imageUrls) {
+  let currentIndex = 0;
+  const currentImage = document.getElementById("current-image");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const counter = document.getElementById("image-counter");
+
+  if (!currentImage || !prevBtn || !nextBtn || !counter) return;
+
+  function updateImage() {
+    currentImage.src = imageUrls[currentIndex];
+    counter.textContent = `${currentIndex + 1} of ${imageUrls.length}`;
+  }
+
+  function showPrev() {
+    currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length;
+    updateImage();
+  }
+
+  function showNext() {
+    currentIndex = (currentIndex + 1) % imageUrls.length;
+    updateImage();
+  }
+
+  prevBtn.addEventListener("click", showPrev);
+  nextBtn.addEventListener("click", showNext);
+
+  // Initialize
+  updateImage();
 }
 
 // Update report status
@@ -1076,7 +1130,7 @@ function showCelebration() {
   text.style.animation = "fadeIn 0.5s ease-out";
   container.appendChild(text);
 
-  const emojis = ["🎉", "✨", "🎊", "⭐", "🚁"];
+  const emojis = ["🎉", "✨", "🎊", "⭐", "𖥂🎮"];
   const count = 20;
   for (let i = 0; i < count; i++) {
     const span = document.createElement("span");

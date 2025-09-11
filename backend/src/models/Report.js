@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 
 const reportSchema = new mongoose.Schema({
+  // For Report
+
   user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  imageUrl: [String], // Changed to an array to store multiple image URLs
-  imageId: [String], // Changed to an array to store multiple image IDs
+  imageUrl: [String],
+  imageId: [String],
   reportType: { type: String, enum: ["photo", "text"], default: "text" },
   status: {
     type: String,
@@ -16,9 +18,13 @@ const reportSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
   },
-  // Task assignment fields
+  // Task assignment to drone
   assignedDrone: { type: String },
-  priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
+  priority: {
+    type: String,
+    enum: ["low", "medium", "high", "urgent"],
+    default: "medium",
+  },
   deadline: { type: Date },
   assignmentNotes: { type: String },
   assignedAt: { type: Date },

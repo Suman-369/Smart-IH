@@ -171,7 +171,7 @@ async function assignTask(req, res) {
     });
   }
 
-  // Normalize both dates (ignore time)
+ 
   const today = new Date();
   const deadlineDateOnly = new Date(
     deadlineDate.getFullYear(),

@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// Request logging middleware (for debugging) - only log API requests
+
 app.use((req, res, next) => {
   // Only log API requests to reduce noise
   if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
@@ -19,7 +19,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS middleware - must be before other middleware
+
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -121,7 +121,6 @@ app.all('/auth/*', (req, res) => {
   });
 });
 
-// Handle clean URLs without .html extensions
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "../../frontend/login.html"));
 });
@@ -143,7 +142,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../../frontend/index.html"));
 });
 
-// Global error handler
+// If error come
 app.use((error, req, res, next) => {
   console.error('Global error handler triggered:', {
     message: error.message,

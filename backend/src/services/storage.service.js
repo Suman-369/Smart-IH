@@ -7,17 +7,11 @@ const imagekit = new ImageKit({
 });
 
 async function uploadImg(file, filename) {
-  console.log("Uploading file to ImageKit:", { fileName: filename });
-
+ 
   const response = await imagekit.upload({
     file: file,
     fileName: filename,
     folder: "SIH",
-  });
-
-  console.log("File uploaded to ImageKit successfully:", {
-    url: response.url,
-    fileId: response.fileId,
   });
 
   return response;
