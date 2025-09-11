@@ -4,12 +4,8 @@ const jwt = require("jsonwebtoken");
 
 async function register(req, res) {
   try {
-    console.log('Registration request received:', {
-      body: req.body,
-      headers: req.headers['content-type']
-    });
-
-    const { name, email, password, role } = req.body;
+   
+    const { name, email, password} = req.body;
     
     // Validation
     if (!name || !email || !password) {
@@ -26,7 +22,6 @@ async function register(req, res) {
     
     // Always set role to 'user' for new registrations
     const userRole = 'user';
-    console.log('User role set to:', userRole);
     
     const isUserExist = await userModel.findOne({
       $or: [
@@ -40,7 +35,6 @@ async function register(req, res) {
       });
     }
 
-    console.log('Creating new user...');
     
     // Hash password manually before creating user
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -52,12 +46,11 @@ async function register(req, res) {
       role: userRole
     });
 
-    console.log('User created successfully:', user._id);
+  
 
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
     );
 
     const responseData = {
@@ -71,7 +64,6 @@ async function register(req, res) {
       }
     };
 
-    console.log('Sending registration response:', responseData);
 
     // Ensure JSON response
     res.setHeader('Content-Type', 'application/json');
@@ -95,16 +87,11 @@ async function register(req, res) {
 
 async function login(req, res) {
   try {
-    console.log('Login request received:', {
-      body: { email: req.body.email, password: '***' },
-      headers: req.headers['content-type']
-    });
-
+ 
     const { email, password } = req.body;
     
     // Validation
     if (!email || !password) {
-      console.log('Login validation failed: Missing credentials');
       return res.status(400).json({
         message: "Email and password are required"
       });
@@ -113,7 +100,6 @@ async function login(req, res) {
     const user = await userModel.findOne({ email: email });
 
     if (!user) {
-      console.log('Login failed: User not found for email:', email);
       return res.status(400).json({ 
         message: "Invalid email or password" 
       });
@@ -122,18 +108,15 @@ async function login(req, res) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      console.log('Login failed: Invalid password for user:', email);
       return res.status(400).json({ 
         message: "Invalid email or password" 
       });
     }
 
-    console.log('Login successful for user:', email);
 
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '7d' }
     );
 
     const responseData = {
@@ -147,7 +130,6 @@ async function login(req, res) {
       }
     };
 
-    console.log('Sending login response for user:', user.email);
 
     // Ensure JSON response
     res.setHeader('Content-Type', 'application/json');

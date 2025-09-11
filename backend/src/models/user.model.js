@@ -27,12 +27,12 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Only hash password if it's not already hashed
+
 userSchema.pre("save", async function(next) {
-  // Only hash if password is modified and not already hashed
+
   if (!this.isModified("password")) return next();
   
-  // Check if password is already hashed (bcrypt hashes start with $2)
+
   if (this.password.startsWith('$2')) return next();
 
   // Hash password

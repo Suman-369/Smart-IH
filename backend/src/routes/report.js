@@ -15,7 +15,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
-// POST /api/reports → submit report (auth: user or admin)
+// submit report (auth: user )
 router.post(
   "/",
   authMiddleware(["user", "admin"]),
@@ -23,10 +23,10 @@ router.post(
   submitReport
 );
 
-// GET /api/reports → get user's own reports (auth: user)
+// get user's own reports (auth: user)
 router.get("/", authMiddleware(["user"]), getUserReports);
 
-// GET /api/reports/all → get all reports (auth: admin)
+//  get all reports (auth: admin)
 router.get("/all", authMiddleware(["admin"]), getAllReports);
 
 // GET /api/reports/:id → get specific report by ID (auth: user or admin)
